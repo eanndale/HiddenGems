@@ -2,7 +2,9 @@ package com.example.libby.hiddengems;
 
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TabHost;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -27,8 +29,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         TabHost host = (TabHost)findViewById(R.id.tabHost);
         host.setup();
 
-        //Tab 1
         TabHost.TabSpec spec = host.newTabSpec("Tab One");
+        //Tab 1
+
         spec.setContent(R.id.tab1);
         spec.setIndicator("Map");
         host.addTab(spec);
@@ -38,6 +41,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         spec.setContent(R.id.tab2);
         spec.setIndicator("List");
         host.addTab(spec);
+
+
+        String startAddress = getIntent().getStringExtra("startAddress");
+//        String endAddress = getIntent().getStringExtra("endAddress");
+        Log.i("start address", startAddress);
+        Toast.makeText(this, startAddress, Toast.LENGTH_SHORT).show();
+
+
+
     }
 
 
@@ -61,5 +73,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         LatLng sydney = new LatLng(-34, 151);
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+
+
+
     }
 }
