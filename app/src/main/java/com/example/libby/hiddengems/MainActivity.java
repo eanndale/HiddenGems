@@ -16,7 +16,9 @@ import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.location.places.ui.SupportPlaceAutocompleteFragment;
 
-public class MainActivity extends FragmentActivity {
+import java.io.Serializable;
+
+public class MainActivity extends AppCompatActivity {
 
     private Button btn;
 
@@ -25,35 +27,45 @@ public class MainActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        final Place[] tempPlace = new Place[1];
+
+        PlaceAutocompleteFragment startFragment = (PlaceAutocompleteFragment)
+                getFragmentManager().findFragmentById(R.id.start_autocomplete_fragment);
+
+        startFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+
+            @Override
+            public void onPlaceSelected(Place place) {
+                // TODO: Get info about the selected place.
+                Log.i("place selected", "Place: " + place.getName());
+                tempPlace[0] = place;
+
+
+            }
+
+            @Override
+            public void onError(Status status) {
+                // TODO: Handle the error.
+                Log.i("error", "An error occurred: " + status);
+            }
+        });
+
+
+
+
         btn = (Button) findViewById(R.id.button);
 
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                final Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
 
-                SupportPlaceAutocompleteFragment startFragment = (SupportPlaceAutocompleteFragment)
-                        getSupportFragmentManager().findFragmentById(R.id.start_autocomplete_fragment);
-
-                startFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
-                    @Override
-                    public void onPlaceSelected(Place place) {
-                        // TODO: Get info about the selected place.
-                        Log.i("place selected", "Place: " + place.getName());
-                        intent.putExtra("startAddress",place.getName());
-//                        Toast.makeText(this, place.getName(), Toast.LENGTH_LONG).show();
-                    }
-
-                    @Override
-                    public void onError(Status status) {
-                        // TODO: Handle the error.
-                        Log.i("error", "An error occurred: " + status);
-                    }
-                });
-
-
-
+                Toast.makeText(MainActivity.this, "TOASTY TOAST", Toast.LENGTH_LONG).show();
+                Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
+                Log.i("temp place selected", "tempPlace: " + tempPlace[0].getName());
+                Bundle bundle = new Bundle();
+                bundle.putSerializable("tempPlace", (Serializable) tempPlace[0]);
+                intent.putExtras(bundle);
                 startActivity(intent);
 
             }

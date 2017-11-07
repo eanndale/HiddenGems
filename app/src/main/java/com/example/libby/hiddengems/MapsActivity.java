@@ -6,12 +6,15 @@ import android.util.Log;
 import android.widget.TabHost;
 import android.widget.Toast;
 
+import com.google.android.gms.location.places.Place;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+
+import java.io.Serializable;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -43,10 +46,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         host.addTab(spec);
 
 
-        String startAddress = getIntent().getStringExtra("startAddress");
-//        String endAddress = getIntent().getStringExtra("endAddress");
-        Log.i("start address", startAddress);
-        Toast.makeText(this, startAddress, Toast.LENGTH_SHORT).show();
 
 
 
@@ -69,8 +68,29 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
+        try {
+
+        } catch (Exception e) {
+            return;
+        }
+//        Place startPlace = (Place) getIntent().getSerializableExtra("startPlace");
+//
+//        if (startPlace == null) {
+//            Log.i("its null", "so null");
+//        } else {
+//            Log.i("yay", "yaaaayyyy");
+//        }
+//        String endAddress = getIntent().getStringExtra("endAddress");
+//        if (startPlace.getAddress() != null) {
+//            Log.i("start address", (String) startPlace.getAddress());
+//        }
+
+//        Toast.makeText(this, startAddress, Toast.LENGTH_SHORT).show();
+
+
         // Add a marker in Sydney and move the camera
         LatLng sydney = new LatLng(-34, 151);
+//        LatLng start = startPlace.getLatLng();
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
 
