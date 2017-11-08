@@ -1,6 +1,7 @@
 package com.example.libby.hiddengems;
 
 import android.content.Intent;
+import android.os.Parcelable;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -27,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final Place[] tempPlace = new Place[1];
+        final Place[] tempPlace = new Place[2];
 
         PlaceAutocompleteFragment startFragment = (PlaceAutocompleteFragment)
                 getFragmentManager().findFragmentById(R.id.start_autocomplete_fragment);
@@ -39,8 +40,25 @@ public class MainActivity extends AppCompatActivity {
                 // TODO: Get info about the selected place.
                 Log.i("place selected", "Place: " + place.getName());
                 tempPlace[0] = place;
+            }
 
+            @Override
+            public void onError(Status status) {
+                // TODO: Handle the error.
+                Log.i("error", "An error occurred: " + status);
+            }
+        });
 
+        PlaceAutocompleteFragment endFragment = (PlaceAutocompleteFragment)
+                getFragmentManager().findFragmentById(R.id.end_autocomplete_fragment);
+
+        endFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+
+            @Override
+            public void onPlaceSelected(Place place) {
+                // TODO: Get info about the selected place.
+                Log.i("place selected", "Place: " + place.getName());
+                tempPlace[1] = place;
             }
 
             @Override
@@ -59,13 +77,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-
-                Toast.makeText(MainActivity.this, "TOASTY TOAST", Toast.LENGTH_LONG).show();
                 Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
-                Log.i("temp place selected", "tempPlace: " + tempPlace[0].getName());
-                Bundle bundle = new Bundle();
-                bundle.putSerializable("tempPlace", (Serializable) tempPlace[0]);
-                intent.putExtras(bundle);
+//                Log.i("temp place selected", "tempPlace: " + tempPlace[0].getName());
+                intent.putExtra("start", (Parcelable) tempPlace[0]);
+                intent.putExtra("end", (Parcelable) tempPlace[1]);
                 startActivity(intent);
 
             }
