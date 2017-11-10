@@ -2,15 +2,26 @@ package com.example.libby.hiddengems;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
+import android.graphics.Color;
 import android.support.design.widget.BottomSheetDialogFragment;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TabHost;
 import android.widget.Toast;
 
+import com.akexorcist.googledirection.DirectionCallback;
+import com.akexorcist.googledirection.GoogleDirection;
+import com.akexorcist.googledirection.constant.TransportMode;
+import com.akexorcist.googledirection.model.Direction;
+import com.akexorcist.googledirection.model.Leg;
+import com.akexorcist.googledirection.model.Route;
+import com.akexorcist.googledirection.util.DirectionConverter;
 import com.google.android.gms.location.places.Place;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -21,27 +32,36 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import java.io.Serializable;
+import com.google.android.gms.maps.model.PolylineOptions;
 
-//public class MyBottomDialogFragment extends BottomSheetDialogFragment {
-//
-//    @SuppressLint("RestrictedApi")
-//    @Override
-//    public void setupDialog(final Dialog dialog, int style) {
-//        super.setupDialog(dialog, style);
-//        View contentView = View.inflate(getContext(), R.layout.fragment_bottomsheet3, null);
-//        dialog.setContentView(contentView);
-//    }
-//}
+
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpRequestFactory;
+import org.apache.http.HttpResponse;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
+import static java.lang.Double.max;
+import static java.lang.Double.min;
+
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
 
 
+//    private Button btnRequestDirection;
+    private String serverKey = "AIzaSyBold8BEkdg3qQosQk7Fz1uWuyl0GJ9JOk";
     private GoogleMap mMap;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        Log.i("message", "onCreateStart");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -65,6 +85,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         spec.setIndicator("List");
         host.addTab(spec);
 
+        Log.i("message", "onCreateEnd");
+
 
     }
 
@@ -82,35 +104,65 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
-
+        Log.i("message", "onMapReady");
 
         Place startPlace = (Place) getIntent().getParcelableExtra("start");
         Place endPlace = (Place) getIntent().getParcelableExtra("end");
 
         LatLng start = startPlace.getLatLng();
         LatLng end = endPlace.getLatLng();
+        double max_lat = max(start.latitude, end.latitude);
+        double min_lat = min(start.latitude, end.latitude);
+        double max_lng = max(start.longitude, end.longitude);
+        double min_lng = min(start.longitude, end.longitude);
 
-        LatLngBounds ROUTE = new LatLngBounds(start, end);
+        LatLngBounds ROUTE = new LatLngBounds(
+                new LatLng(min_lat - 0.01, min_lng - 0.01), new LatLng(max_lat + 0.01, max_lng + 0.01));
 
 
-        Marker startMarker = mMap.addMarker(new MarkerOptions().position(start).title((String) startPlace.getAddress()));
-        Marker endMarker = mMap.addMarker(new MarkerOptions().position(end).title((String) endPlace.getAddress()));
-        startMarker.showInfoWindow();
-        endMarker.showInfoWindow();
+        requestDirection(start, end);
 
         UiSettings settings = googleMap.getUiSettings();
         settings.setZoomControlsEnabled(true);
 
-//        BottomSheetDialogFragment bottomSheetDialogFragment = new MyBottomDialogFragment ();
-//        bottomSheetDialogFragment.show(getSupportFragmentManager(),bottomSheetDialogFragment.getTag());
+        //LatLngBounds ROUTE = new LatLngBounds(start, end);
 
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ROUTE.getCenter(), 15));
-
-
-
-
-
+//
+//        int width = getResources().getDisplayMetrics().widthPixels;
+//        int height = getResources().getDisplayMetrics().heightPixels;
+//        int padding = (int) (width * 0.12); // offset from edges of the map 12% of screen
+        mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(ROUTE, 3));
 
     }
+
+    public void requestDirection(final LatLng start, final LatLng end) {
+        Log.i("message", "requestDirection");
+
+        GoogleDirection.withServerKey(serverKey)
+                .from(start)
+                .to(end)
+                .transportMode(TransportMode.DRIVING)
+                .execute(new DirectionCallback() {
+                    @Override
+                    public void onDirectionSuccess(Direction direction, String rawBody) {
+                        // Do something here
+                        if (direction.isOK()) {
+                            mMap.addMarker(new MarkerOptions().position(start));
+                            mMap.addMarker(new MarkerOptions().position(end));
+
+                            ArrayList<LatLng> directionPositionList = direction.getRouteList().get(0).getLegList().get(0).getDirectionPoint();
+                            mMap.addPolyline(DirectionConverter.createPolyline(getApplicationContext(), directionPositionList, 5, Color.RED));
+
+                        }
+
+                    }
+
+                    @Override
+                    public void onDirectionFailure(Throwable t) {
+                        // Do something here
+                        Log.i("oh shit", "bad");
+                    }
+                });
+    }
+
 }
