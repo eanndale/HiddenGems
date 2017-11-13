@@ -1,28 +1,17 @@
 package com.example.libby.hiddengems;
 
-import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Parcelable;
-import android.support.v4.app.FragmentActivity;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
-import com.google.android.gms.location.places.ui.SupportPlaceAutocompleteFragment;
-
-import java.io.Serializable;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -84,41 +73,25 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 if(!assigned[0] || !tempPlace[0].isDataValid() || !assigned[1] || !tempPlace[1].isDataValid()) {
-                    final Dialog incompleteWarning = new Dialog(MainActivity.this);
-                    incompleteWarning.setContentView(R.layout.dialog);
-                    TextView title = (TextView) incompleteWarning.findViewById(R.id.title);
-                    title.setVisibility(View.VISIBLE);
-                    title.setText("Almost there...");
-                    TextView body = (TextView) incompleteWarning.findViewById(R.id.body);
-                    body.setVisibility(View.VISIBLE);
-                    LinearLayout ll = (LinearLayout) incompleteWarning.findViewById(R.id.dialog_bot);
-                    ll.setVisibility(View.VISIBLE);
-
                     if (!assigned[0]) {
                         Log.e("error", "Start Location is required");
-                        title.setText("Where u at?");
-                        body.setText("Fill in start location");
-
+                        Utils.showDialog(MainActivity.this, true, "Almost there...", false,0.0,
+                                true, "Fill in start location", true, false, 0);
                     } else if (!tempPlace[0].isDataValid()) {
                         Log.e("error", "Start Location is not valid");
-                        body.setText("Can't find that start location");
+                        Utils.showDialog(MainActivity.this, true, "Almost there...", false,0.0,
+                                true, "Cannot find that start location", true, false,0);
                     } else if (!assigned[1]) {
                         Log.e("error", "End Location is required");
-                        title.setText("Where u goin?");
-                        body.setText("Fill in end location");
+
+                        Utils.showDialog(MainActivity.this, true, "Almost there...", false,0.0,
+                                true, "Fill in end location", true, false,0);
                     } else if (!tempPlace[1].isDataValid()) {
                         Log.e("error", "End Location is not valid");
-                        body.setText("Can't find that end location");
+                        Utils.showDialog(MainActivity.this, true, "Almost there...", false,0.0,
+                                true, "Cannot find that end location", true, false,0);
                     }
-
-                    incompleteWarning.show();
-                    Button b = (Button) incompleteWarning.findViewById(R.id.dialogueButton);
-                    b.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {incompleteWarning.dismiss();}
-                    });
                     return;
-
                 }
 
                 Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
