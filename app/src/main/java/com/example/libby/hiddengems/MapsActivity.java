@@ -34,6 +34,8 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -60,23 +62,38 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Utils.init(this);
+        //TODO EMMIE: Pass all things through intent, Preferences should be a popup with checkboxes on main page
         startPlace = (Place) getIntent().getParcelableExtra("start");
         endPlace = (Place) getIntent().getParcelableExtra("end");
         Log.i("Start: ", startPlace.getAddress().toString());
         Log.i("End: ", endPlace.getAddress().toString());
 
+        /*
+        Preferences and budget and radius
+        budget and radius can just be added to the msg
+         */
+        ArrayList<String> prefs = new ArrayList<>();
+        JSONObject startMsg = new JSONObject();
+        try {
+            startMsg.put("start_long", startPlace.getLatLng().longitude);
+            startMsg.put("start_lat", startPlace.getLatLng().latitude);
+            startMsg.put("end_long", endPlace.getLatLng().longitude);
+            startMsg.put("end_lat", endPlace.getLatLng().latitude);
 
-        Map<String, Double> startMsg = new HashMap<>();
-        startMsg.put("start_long", startPlace.getLatLng().longitude);
-        startMsg.put("start_lat", startPlace.getLatLng().latitude);
-        startMsg.put("end_long", endPlace.getLatLng().longitude);
-        startMsg.put("end_lat", endPlace.getLatLng().latitude);
+            //TODO EMMIE!!!
+            startMsg.put("budget", 0.0);
+            startMsg.put("radius", 0.0);
+            startMsg.put("Preferences", prefs);
+
 //        Map<String, String> startMsg = new HashMap<>();
 //        startMsg.put("start_address", startPlace.getAddress().toString());
 //        startMsg.put("end_address", endPlace.getAddress().toString());
 //        final AsyncTask<Map<String, Double>, Void, String> msgs = new Utils.sendRoute().execute(startMsg);
-        new Utils.sendRoute<Double>().execute(startMsg);
-
+            new Utils.sendRoute().execute(startMsg);
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+        }
 
         Log.i("message", "onCreateStart");
         super.onCreate(savedInstanceState);
