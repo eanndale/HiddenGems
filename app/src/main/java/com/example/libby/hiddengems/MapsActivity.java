@@ -1,5 +1,6 @@
 package com.example.libby.hiddengems;
 
+import android.app.ListActivity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
@@ -35,6 +36,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static java.lang.Double.max;
@@ -113,7 +115,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         spec.setIndicator("Stop List");
         host.addTab(spec);
 
-        Log.i("message", "onCreateEnd");
+        //Tab 3
+        spec = host.newTabSpec("Tab Three");
+        spec.setContent(R.id.tab3);
+        spec.setIndicator("Preferences");
+        host.addTab(spec);
+
+//        ArrayAdapter<String> adapter;
+
+//        List<String> values = null; // put values in this
+//        values.add("hi");
+//
+//        adapter = new ArrayAdapter<String>(
+//                this,
+//                android.R.layout.simple_list_item_multiple_choice,
+//                values);
+//
+//        ListView prefList = (ListView) findViewById(R.id.listView2);
+//        prefList.setAdapter(adapter);
+//
+//        Log.i("message", "onCreateEnd");
 
 
     }
