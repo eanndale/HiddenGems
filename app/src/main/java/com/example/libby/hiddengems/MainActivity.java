@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
+import android.widget.TextView;
 
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.Place;
@@ -145,12 +146,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        SeekBar seekBar = (SeekBar) findViewById(R.id.seekBar); // initiate the Seek bar
-
+        final SeekBar seekBar = (SeekBar) findViewById(R.id.seekBar); // initiate the Seek bar
+        final TextView textView = (TextView) findViewById(R.id.progress); //progress bar
+        textView.setText(seekBar.getProgress() + " miles");
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            int progress = 0;
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-
+                progress = i;
             }
 
             @Override
@@ -160,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-
+                textView.setText(seekBar.getProgress() + " miles");
             }
         });
 
@@ -192,10 +195,14 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
 
-                Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
+                Intent intent = new Intent(getApplicationContext(), RouteActivity.class);
 //                Log.i("temp place selected", "tempPlace: " + tempPlace[0].getName());
                 intent.putExtra("start", (Parcelable) tempPlace[0]);
                 intent.putExtra("end", (Parcelable) tempPlace[1]);
+                int radius = seekBar.getProgress();
+                intent.putExtra("radius", radius);
+                intent.putExtra("priceRange", selectedButtons);
+
                 startActivity(intent);
 
             }
