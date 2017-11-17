@@ -31,6 +31,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 
@@ -58,13 +59,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private Place startPlace;
     private Place endPlace;
+    private int radius;
+    private boolean[] priceRange;
+    private ArrayList<String> userPrefList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Utils.init(this);
-        //TODO EMMIE: Pass all things through intent, Preferences should be a popup with checkboxes on main page
+        //UPdate: preferences is a window before map activity
         startPlace = (Place) getIntent().getParcelableExtra("start");
         endPlace = (Place) getIntent().getParcelableExtra("end");
+        radius = getIntent().getIntExtra("radius", 30);
+        priceRange = getIntent().getBooleanArrayExtra("priceRange");
+        userPrefList = getIntent().getStringArrayListExtra("preferences");
         Log.i("Start: ", startPlace.getAddress().toString());
         Log.i("End: ", endPlace.getAddress().toString());
 
@@ -81,9 +88,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             startMsg.put("end_lat", endPlace.getLatLng().latitude);
 
             //TODO EMMIE!!!
-            startMsg.put("budget", 0.0);
-            startMsg.put("radius", 0.0);
-            startMsg.put("Preferences", prefs);
+            startMsg.put("budget", priceRange);
+            startMsg.put("radius", radius);
+            startMsg.put("Preferences", userPrefList);
 
 //        Map<String, String> startMsg = new HashMap<>();
 //        startMsg.put("start_address", startPlace.getAddress().toString());
@@ -130,12 +137,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         spec = host.newTabSpec("Tab Two");
         spec.setContent(R.id.tab2);
         spec.setIndicator("Stop List");
-        host.addTab(spec);
-
-        //Tab 3
-        spec = host.newTabSpec("Tab Three");
-        spec.setContent(R.id.tab3);
-        spec.setIndicator("Preferences");
         host.addTab(spec);
 
 //        ArrayAdapter<String> adapter;
@@ -242,14 +243,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             for(StopInfo ll : Utils.arra) {
                                 mMap.addMarker(new MarkerOptions().position(ll.getLoc()).title(ll.getName()));
 
-                                //
-//                                mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-//                                    @Override
-//                                    public boolean onMarkerClick(Marker marker) {
-//                                        return false;
-//                                    }
-//                                });
-                            }
+
+                                mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+
+                                    @Override public boolean onMarkerClick(Marker marker) {
+                                        return false;
+                                    }
+                                });
 
                             ArrayList<LatLng> directionPositionList = new ArrayList<>();
                             for (Route r : direction.getRouteList()) {
@@ -265,14 +265,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                     }
 
-                    @Override
-                    public void onDirectionFailure(Throwable t) {
-                        // Do something here
-                        Log.i("oh shit", "bad");
-                    }
-                });
-    }
-    public void reset() {
+                }
+
+                @Override
+                public void onDirectionFailure(Throwable t) {
+                    //blah
+                }
+    });}
+    public void reset(){
         Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
 //                Log.i("temp place selected", "tempPlace: " + tempPlace[0].getName());
         intent.putExtra("start", (Parcelable) startPlace);
@@ -280,4 +280,5 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         startActivity(intent);
 
     }
+
 }
