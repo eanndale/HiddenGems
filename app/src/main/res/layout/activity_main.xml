@@ -22,31 +22,27 @@
     <fragment
         android:id="@+id/start_autocomplete_fragment"
         android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginEnd="18dp"
+        android:layout_height="61dp"
+        android:layout_marginEnd="16dp"
         android:layout_marginStart="16dp"
         android:ems="10"
-        app:layout_constraintBottom_toBottomOf="@+id/end_autocomplete_fragment"
-        app:layout_constraintEnd_toStartOf="@+id/end_autocomplete_fragment"
+        android:hint="Start"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/end_autocomplete_fragment" />
+        tools:layout_editor_absoluteY="59dp" />
 
     <fragment
         android:id="@+id/end_autocomplete_fragment"
         android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
         android:layout_width="0dp"
         android:layout_height="61dp"
-        android:layout_marginBottom="79dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginTop="76dp"
+        android:layout_marginStart="16dp"
         android:ems="10"
         android:hint="End"
-        android:inputType="textPersonName"
-        app:layout_constraintBottom_toTopOf="@+id/textView3"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/start_autocomplete_fragment"
-        app:layout_constraintTop_toTopOf="@+id/taglineTextView" />
+        app:layout_constraintStart_toStartOf="parent"
+        tools:layout_editor_absoluteY="181dp" />
 
 
     <Button
@@ -64,29 +60,31 @@
         android:id="@+id/button1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
+        android:layout_marginStart="16dp"
         android:background="@android:color/darker_gray"
         android:text="$"
         app:layout_constraintBaseline_toBaselineOf="@+id/button2"
+        app:layout_constraintEnd_toStartOf="@+id/button2"
         app:layout_constraintStart_toStartOf="parent" />
 
     <Button
         android:id="@+id/button2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="9dp"
-        android:layout_marginTop="167dp"
+        android:layout_marginTop="310dp"
         android:background="@android:color/darker_gray"
         android:text="$$"
-        app:layout_constraintEnd_toStartOf="@+id/end_autocomplete_fragment"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_editor_absoluteX="104dp" />
 
     <Button
         android:id="@+id/button3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
         android:background="@android:color/darker_gray"
         android:text="$$$"
+        app:layout_constraintBaseline_toBaselineOf="@+id/button2"
         app:layout_constraintStart_toEndOf="@+id/button2"
         app:layout_constraintTop_toTopOf="@+id/button2" />
 
@@ -94,9 +92,11 @@
         android:id="@+id/button4"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
         android:background="@android:color/darker_gray"
         android:text="$$$$"
         app:layout_constraintBaseline_toBaselineOf="@+id/button3"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/button3" />
 
     <SeekBar
@@ -106,7 +106,7 @@
         android:layout_marginBottom="34dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="36dp"
+        android:layout_marginTop="40dp"
         android:max="30"
         app:layout_constraintBottom_toBottomOf="@+id/textView"
         app:layout_constraintEnd_toEndOf="parent"
@@ -114,36 +114,15 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/textView3" />
 
-    <!--<TextView-->
-        <!--android:id="@+id/textView"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_marginBottom="183dp"-->
-        <!--android:layout_marginStart="16dp"-->
-        <!--android:text="0"-->
-        <!--android:textSize="18sp"-->
-        <!--app:layout_constraintBottom_toBottomOf="parent"-->
-        <!--app:layout_constraintStart_toStartOf="parent" />-->
-
-    <!--<TextView-->
-        <!--android:id="@+id/textView2"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_marginEnd="16dp"-->
-        <!--android:layout_marginTop="9dp"-->
-        <!--android:text="30"-->
-        <!--android:textSize="18sp"-->
-        <!--app:layout_constraintEnd_toEndOf="parent"-->
-        <!--app:layout_constraintTop_toBottomOf="@+id/seekBar" />-->
-
     <TextView
         android:id="@+id/textView3"
         android:layout_width="wrap_content"
         android:layout_height="25dp"
-        android:layout_marginTop="17dp"
+        android:layout_marginTop="16dp"
         android:text="Radius (in miles)"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="@+id/button2"
+        app:layout_constraintHorizontal_bias="0.496"
         app:layout_constraintStart_toEndOf="@+id/button2"
         app:layout_constraintTop_toBottomOf="@+id/button2" />
 
@@ -155,6 +134,28 @@
         app:layout_constraintEnd_toEndOf="@id/button2"
         app:layout_constraintStart_toEndOf="@id/button2"
         app:layout_constraintTop_toBottomOf="@id/seekBar" />
+
+    <EditText
+        android:id="@+id/start_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:ems="10"
+        android:inputType="date"
+        android:text="Start Date"
+        app:layout_constraintStart_toStartOf="@+id/start_autocomplete_fragment"
+        app:layout_constraintTop_toBottomOf="@+id/start_autocomplete_fragment" />
+
+    <EditText
+        android:id="@+id/end_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:ems="10"
+        android:inputType="date"
+        android:text="End Date"
+        app:layout_constraintStart_toStartOf="@+id/end_autocomplete_fragment"
+        app:layout_constraintTop_toBottomOf="@+id/end_autocomplete_fragment" />
 
 
 </android.support.constraint.ConstraintLayout>
