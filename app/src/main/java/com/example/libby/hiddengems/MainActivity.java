@@ -1,13 +1,17 @@
 package com.example.libby.hiddengems;
 
+import android.app.DatePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -16,29 +20,46 @@ import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
+
 public class MainActivity extends AppCompatActivity {
 
     private Button btn;
+    private SimpleDateFormat dateFormatter;
+    private EditText startDate;
+    private EditText endDate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final Place[] tempPlace = new Place[2];
+        dateFormatter = new SimpleDateFormat("dd-mm-yyyy", Locale.US);
+
+        if(!Preferences.isInited()) {
+            Preferences.init();
+        }
+
+        //final Place[] tempPlace = new Place[2];
         final boolean[] assigned = new boolean[2];
 
         final PlaceAutocompleteFragment startFragment = (PlaceAutocompleteFragment)
                 getFragmentManager().findFragmentById(R.id.start_autocomplete_fragment);
         startFragment.setHint("Start Location *");
+        if (Preferences.getStartLoc() != null) {
+            assigned[0] = true;
+            startFragment.setText(Preferences.getStartLoc().getName());
+        }
         startFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
-
             @Override
             public void onPlaceSelected(Place place) {
                 // TODO: Get info about the selected place.
                 Log.i("place selected", "Place: " + place.getName());
-                tempPlace[0] = place;
+                //tempPlace[0] = place;
                 assigned[0] = true;
+                Preferences.setStartLoc(place);
             }
 
             @Override
@@ -47,18 +68,41 @@ public class MainActivity extends AppCompatActivity {
                 Log.i("error", "An error occurred: " + status);
             }
         });
+
+        startDate = (EditText) findViewById(R.id.start_date);
+//        startDate.setInputType(InputType.TYPE_NULL);
+//        final Calendar newCal = Calendar.getInstance();
+//        startDate.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                startDate.requestFocus();
+//                DatePickerDialog startDateDialogue = new DatePickerDialog(getApplicationContext(), new DatePickerDialog.OnDateSetListener() {
+//                    @Override
+//                    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+//                        Calendar newDate = Calendar.getInstance();
+//                        newDate.set(year, month, dayOfMonth);
+//                        startDate.setText(dateFormatter.format(newDate.getTime()));
+//                    }
+//                }, newCal.get(Calendar.YEAR), newCal.get(Calendar.MONTH), newCal.get(Calendar.DAY_OF_MONTH));
+//                startDateDialogue.show();
+//            }
+//        });
 
         PlaceAutocompleteFragment endFragment = (PlaceAutocompleteFragment)
                 getFragmentManager().findFragmentById(R.id.end_autocomplete_fragment);
         endFragment.setHint("End Location *");
+        if (Preferences.getEndLoc() != null) {
+            assigned[1] = true;
+            endFragment.setText(Preferences.getEndLoc().getName());
+        }
         endFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
-
             @Override
             public void onPlaceSelected(Place place) {
                 // TODO: Get info about the selected place.
                 Log.i("place selected", "Place: " + place.getName());
-                tempPlace[1] = place;
+                //tempPlace[1] = place;
                 assigned[1] = true;
+                Preferences.setEndLoc(place);
             }
 
             @Override
@@ -68,117 +112,32 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        final boolean[] iscolor = {true, true, true, true};
-        final boolean[] selectedButtons = {false, false, false, false};
-        final Button b1 = (Button) findViewById(R.id.button1);
-        b1.setOnClickListener(new View.OnClickListener() {
+        endDate = (EditText) findViewById(R.id.end_date);
+//        endDate.setInputType(InputType.TYPE_NULL);
+//        endDate.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                DatePickerDialog startDateDialogue = new DatePickerDialog(getApplicationContext(), new DatePickerDialog.OnDateSetListener() {
+//                    @Override
+//                    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+//                        Calendar newDate = Calendar.getInstance();
+//                        newDate.set(year, month, dayOfMonth);
+//                        endDate.setText(dateFormatter.format(newDate.getTime()));
+//                    }
+//                }, newCal.get(Calendar.YEAR), newCal.get(Calendar.MONTH), newCal.get(Calendar.DAY_OF_MONTH));
+//            }
+//        });
 
-            @Override
-            public void onClick(View arg0) {
-
-                if(iscolor[0]) {
-                    b1.setBackground(getResources().getDrawable(R.drawable.button));
-                    iscolor[0] = false;
-                    selectedButtons[0] = true;
-                }
-                else {
-                    b1.setBackground(getResources().getDrawable(R.drawable.button_false));
-                    iscolor[0] = true;
-                    selectedButtons[0] = false;
-                }
-            }
-        });
-
-        final Button b2 = (Button) findViewById(R.id.button2);
-        b2.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View arg0) {
-
-                if(iscolor[1]) {
-                    b2.setBackground(getResources().getDrawable(R.drawable.button));
-                    iscolor[1] = false;
-                    selectedButtons[1] = true;
-                }
-                else {
-                    b2.setBackground(getResources().getDrawable(R.drawable.button_false));
-                    iscolor[1] = true;
-                    selectedButtons[1] = false;
-                }
-            }
-        });
-
-        final Button b3 = (Button) findViewById(R.id.button3);
-        b3.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View arg0) {
-
-                if(iscolor[2]) {
-                    b3.setBackground(getResources().getDrawable(R.drawable.button));
-                    iscolor[2] = false;
-                    selectedButtons[2] = true;
-                }
-                else {
-                    b3.setBackground(getResources().getDrawable(R.drawable.button_false));
-                    iscolor[2] = true;
-                    selectedButtons[2] = false;
-                }
-            }
-        });
-
-        final Button b4 = (Button) findViewById(R.id.button4);
-        b4.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View arg0) {
-
-                if(iscolor[3]) {
-                    b4.setBackground(getResources().getDrawable(R.drawable.button));
-                    iscolor[3] = false;
-                    selectedButtons[3] = true;
-                }
-                else {
-                    b4.setBackground(getResources().getDrawable(R.drawable.button_false));
-                    iscolor[3] = true;
-                    selectedButtons[3] = false;
-                }
-            }
-        });
-
-        final SeekBar seekBar = (SeekBar) findViewById(R.id.seekBar); // initiate the Seek bar
-        final TextView textView = (TextView) findViewById(R.id.progress); //progress bar
-        textView.setText(seekBar.getProgress() + " miles");
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            int progress = 0;
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                progress = i;
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                textView.setText(seekBar.getProgress() + " miles");
-            }
-        });
-
-
-        btn = (Button) findViewById(R.id.button);
+        btn = (Button) findViewById(R.id.start_main);
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                if(!assigned[0] || !tempPlace[0].isDataValid() || !assigned[1] || !tempPlace[1].isDataValid()) {
+                if(!assigned[0] || !Preferences.getStartLoc().isDataValid() || !assigned[1] || !Preferences.getEndLoc().isDataValid()) {
                     if (!assigned[0]) {
                         Log.e("error", "Start Location is required");
                         Utils.showDialog(MainActivity.this, true, "Almost there...", false,0.0,
                                 true, "Fill in start location", true, false, 0);
-                    } else if (!tempPlace[0].isDataValid()) {
+                    } else if (!Preferences.getStartLoc().isDataValid()) {
                         Log.e("error", "Start Location is not valid");
                         Utils.showDialog(MainActivity.this, true, "Almost there...", false,0.0,
                                 true, "Cannot find that start location", true, false,0);
@@ -187,27 +146,30 @@ public class MainActivity extends AppCompatActivity {
 
                         Utils.showDialog(MainActivity.this, true, "Almost there...", false,0.0,
                                 true, "Fill in end location", true, false,0);
-                    } else if (!tempPlace[1].isDataValid()) {
+                    } else if (!Preferences.getEndLoc().isDataValid()) {
                         Log.e("error", "End Location is not valid");
                         Utils.showDialog(MainActivity.this, true, "Almost there...", false,0.0,
                                 true, "Cannot find that end location", true, false,0);
                     }
                     return;
                 }
-
-                Intent intent = new Intent(getApplicationContext(), RouteActivity.class);
+                Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
 //                Log.i("temp place selected", "tempPlace: " + tempPlace[0].getName());
-                intent.putExtra("start", (Parcelable) tempPlace[0]);
-                intent.putExtra("end", (Parcelable) tempPlace[1]);
-                int radius = seekBar.getProgress();
-                intent.putExtra("radius", radius);
-                intent.putExtra("priceRange", selectedButtons);
+//                intent.putExtra("start", (Parcelable) tempPlace[0]);
+//                intent.putExtra("end", (Parcelable) tempPlace[1]);
 
                 startActivity(intent);
-
             }
         });
 
+        Button butt = (Button) findViewById(R.id.preference_main);
+        butt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), RouteActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
 
