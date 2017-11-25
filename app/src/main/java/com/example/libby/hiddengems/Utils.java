@@ -105,12 +105,12 @@ public class Utils {
 
     }
 
-    public static class sendRoute<T> extends AsyncTask<Map<String, T>, Void, String> {
+    public static class sendRoute extends AsyncTask<JSONObject, Void, String> {
         @Override
-        protected String doInBackground(Map<String, T>[] maps) {
+        protected String doInBackground(JSONObject[] maps) {
             sending = true;
             try {
-                JSONObject rsp = Utils.makeRequest("https://105yog30qc.execute-api.us-east-1.amazonaws.com/api/route", new JSONObject(maps[0]));
+                JSONObject rsp = Utils.makeRequest("https://105yog30qc.execute-api.us-east-1.amazonaws.com/api/route", maps[0]);
                 if (rsp != null) {
                     Log.e("json", rsp.get("places").toString());
                     JSONArray ja = rsp.getJSONArray("places");

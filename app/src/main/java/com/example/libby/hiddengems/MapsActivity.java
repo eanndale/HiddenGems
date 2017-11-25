@@ -1,9 +1,8 @@
 package com.example.libby.hiddengems;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
-import android.os.Build;
-import android.os.Parcelable;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -30,12 +29,13 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 import static java.lang.Double.max;
 import static java.lang.Double.min;
@@ -54,27 +54,57 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private Place startPlace;
     private Place endPlace;
+    private int radius;
+    private double priceRange;
+    private ArrayList<String> userPrefList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Utils.init(this);
-        startPlace = (Place) getIntent().getParcelableExtra("start");
-        endPlace = (Place) getIntent().getParcelableExtra("end");
+        //UPdate: preferences is a window before map activity
+//        startPlace = (Place) getIntent().getParcelableExtra("start");
+//        endPlace = (Place) getIntent().getParcelableExtra("end");
+//        radius = getIntent().getIntExtra("radius", 30);
+//        priceRange = getIntent().getBooleanArrayExtra("priceRange");
+//        userPrefList = getIntent().getStringArrayListExtra("preferences");
+        startPlace = Preferences.getStartLoc();
+        endPlace = Preferences.getEndLoc();
+        radius = Preferences.getDetourRadius();
+        priceRange = Preferences.getBudget();
+        userPrefList = Preferences.attractionList;
+
         Log.i("Start: ", startPlace.getAddress().toString());
         Log.i("End: ", endPlace.getAddress().toString());
 
 
-        Map<String, Double> startMsg = new HashMap<>();
-        startMsg.put("start_long", startPlace.getLatLng().longitude);
-        startMsg.put("start_lat", startPlace.getLatLng().latitude);
-        startMsg.put("end_long", endPlace.getLatLng().longitude);
-        startMsg.put("end_lat", endPlace.getLatLng().latitude);
+//        Preferences and budget and radius
+//        budget and radius can just be added to the msg
+
+        ArrayList<String> prefs = new ArrayList<>();
+        JSONObject startMsg = new JSONObject();
+        try {
+            startMsg.put("phone_id", Preferences.getAndroidId());
+            startMsg.put("start_long", startPlace.getLatLng().longitude);
+            startMsg.put("start_lat", startPlace.getLatLng().latitude);
+            startMsg.put("start_date", Preferences.getStartDate());
+            startMsg.put("end_long", endPlace.getLatLng().longitude);
+            startMsg.put("end_lat", endPlace.getLatLng().latitude);
+            startMsg.put("end_date", Preferences.getEndDate());
+
+            //TODO EMMIE!!!
+            startMsg.put("budget", priceRange);
+            startMsg.put("radius", radius);
+            startMsg.put("Preferences", userPrefList);
+
 //        Map<String, String> startMsg = new HashMap<>();
 //        startMsg.put("start_address", startPlace.getAddress().toString());
 //        startMsg.put("end_address", endPlace.getAddress().toString());
 //        final AsyncTask<Map<String, Double>, Void, String> msgs = new Utils.sendRoute().execute(startMsg);
-        new Utils.sendRoute<Double>().execute(startMsg);
-
+            new Utils.sendRoute().execute(startMsg);
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+        }
 
         Log.i("message", "onCreateStart");
         super.onCreate(savedInstanceState);
@@ -89,13 +119,30 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        se.setText(s);
         Button b = findViewById(R.id.maps_negativeButton);
         b.setOnClickListener(new View.OnClickListener() {
-                                 @Override
-                                 public void onClick(View v) {
-                                     Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                                     startActivity(intent);
-                                 }
-                             }
+             @Override
+             public void onClick(View v) {
+                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                 startActivity(intent);
+             } }
         );
+
+        Button c = findViewById(R.id.maps_preferences);
+        c.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), RouteActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        Button d = findViewById(R.id.maps_positiveButton);
+        d.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), DriveActivity.class);
+                startActivity(intent);
+            }
+        });
 
         TabHost host = (TabHost)findViewById(R.id.tabHost);
         host.setup();
@@ -113,7 +160,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         spec.setIndicator("Stop List");
         host.addTab(spec);
 
-        Log.i("message", "onCreateEnd");
+//        ArrayAdapter<String> adapter;
+
+//        List<String> values = null; // put values in this
+//        values.add("hi");
+//
+//        adapter = new ArrayAdapter<String>(
+//                this,
+//                android.R.layout.simple_list_item_multiple_choice,
+//                values);
+//
+//        ListView prefList = (ListView) findViewById(R.id.listView2);
+//        prefList.setAdapter(adapter);
+//
+//        Log.i("message", "onCreateEnd");
 
 
     }
@@ -203,15 +263,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         if (direction.isOK()) {
                             for(StopInfo ll : Utils.arra) {
                                 mMap.addMarker(new MarkerOptions().position(ll.getLoc()).title(ll.getName()));
-
-                                //
-//                                mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-//                                    @Override
-//                                    public boolean onMarkerClick(Marker marker) {
-//                                        return false;
-//                                    }
-//                                });
-                            }
+//                                mMap.setOnMarkerClickListener(new StopInfoOnClickListener(getApplicationContext(), ll));
 
                             ArrayList<LatLng> directionPositionList = new ArrayList<>();
                             for (Route r : direction.getRouteList()) {
@@ -222,24 +274,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             //direction.getRouteList().get(0).getLegList().get(0).getDirectionPoint();
 
                             mMap.addPolyline(DirectionConverter.createPolyline(getApplicationContext(), directionPositionList, 5, Color.RED));
-
                         }
 
                     }
 
-                    @Override
-                    public void onDirectionFailure(Throwable t) {
-                        // Do something here
-                        Log.i("oh shit", "bad");
-                    }
-                });
-    }
-    public void reset() {
+                }
+
+                @Override
+                public void onDirectionFailure(Throwable t) {
+                    //blah
+                }
+    });}
+    public void reset(){
         Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
-//                Log.i("temp place selected", "tempPlace: " + tempPlace[0].getName());
-        intent.putExtra("start", (Parcelable) startPlace);
-        intent.putExtra("end", (Parcelable) endPlace);
         startActivity(intent);
 
+    }
+    public class StopInfoOnClickListener implements GoogleMap.OnMarkerClickListener {
+        StopInfo info;
+        Context c;
+        public StopInfoOnClickListener(Context cc, StopInfo s) {
+            info = s;
+            c = cc;
+        }
+
+        @Override
+        public boolean onMarkerClick(Marker marker) {
+            Utils.showDialog(c,
+                    true, info.getName(),
+                    true, info.getRating(),
+                    true, info.getDesc(),
+                    false,
+                    true, info.getIndex());
+            return true;
+        }
     }
 }

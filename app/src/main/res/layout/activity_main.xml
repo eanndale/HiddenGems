@@ -5,62 +5,103 @@
     android:id="@+id/taglineEditText"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.libby.hiddengems.MainActivity">
+    tools:context="com.example.libby.hiddengems.MainActivity"
+    tools:layout_editor_absoluteY="81dp">
 
     <TextView
         android:id="@+id/taglineTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:text="Release your inner explorer"
         android:textSize="25sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.091" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <fragment
         android:id="@+id/start_autocomplete_fragment"
         android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
-        android:layout_width="0dp"
         android:layout_height="61dp"
-        android:layout_marginEnd="20dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="149dp"
+        android:layout_width="0dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="40dp"
         android:ems="10"
+        android:hint="Start"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/taglineTextView" />
 
     <fragment
         android:id="@+id/end_autocomplete_fragment"
         android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
         android:layout_width="0dp"
         android:layout_height="61dp"
-        android:layout_marginEnd="20dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="56dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
         android:ems="10"
         android:hint="End"
-        android:inputType="textPersonName"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/start_autocomplete_fragment" />
+        app:layout_constraintTop_toBottomOf="@+id/start_date" />
 
 
-    <Button
-        android:id="@+id/button"
+    <EditText
+        android:id="@+id/start_date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:text="Go!"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginTop="16dp"
+        android:ems="10"
+        android:inputType="text"
+        android:selectAllOnFocus="true"
+        android:text="Start Date"
+        app:layout_constraintStart_toStartOf="@+id/start_autocomplete_fragment"
+        app:layout_constraintTop_toBottomOf="@+id/start_autocomplete_fragment" />
+
+    <EditText
+        android:id="@+id/end_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:ems="10"
+        android:inputType="text"
+        android:selectAllOnFocus="true"
+        android:text="End Date"
+        app:layout_constraintStart_toStartOf="@+id/end_autocomplete_fragment"
+        app:layout_constraintTop_toBottomOf="@+id/end_autocomplete_fragment" />
+
+    <Button
+        android:id="@+id/start_main"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:text="Start Routing!"
+        app:layout_constraintBottom_toBottomOf="@+id/preference_main"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/end_autocomplete_fragment"
         tools:ignore="MissingConstraints" />
+
+    <Button
+        android:id="@+id/load_main"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:text="Load"
+        app:layout_constraintBottom_toBottomOf="@+id/preference_main"
+        app:layout_constraintEnd_toStartOf="@+id/start_main"
+        app:layout_constraintStart_toEndOf="@+id/preference_main" />
+
+    <Button
+        android:id="@+id/preference_main"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="32dp"
+        android:layout_marginStart="8dp"
+        android:text="Preferences"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 
 </android.support.constraint.ConstraintLayout>

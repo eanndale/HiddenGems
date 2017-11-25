@@ -1,5 +1,5 @@
 # HiddenGems
-
+xD
 ## Run the app:
 Run on the Nexus 5X API 25 Virtual Device in Android Studio
 
