@@ -9,7 +9,7 @@ import java.util.ArrayList;
  */
 
 public class Preferences {
-
+    private static String androidId;
     private static Place startLoc;
     private static Place endLoc;
     private static String startDate;
@@ -20,6 +20,7 @@ public class Preferences {
     private static boolean inited = false;
 
     public static void init() {
+        androidId = "";
         startLoc = null;
         endLoc = null;
         startDate = "";
@@ -32,6 +33,12 @@ public class Preferences {
     }
     public static boolean isInited() {
         return inited;
+    }
+    public static void setAndroidId(String s) {
+        androidId = s;
+    }
+    public static String getAndroidId() {
+        return androidId;
     }
     public static void setStartLoc(Place loc) {
         startLoc = loc;

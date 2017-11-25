@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Parcelable;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -49,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
 
         if(!Preferences.isInited()) {
             Preferences.init();
+            Preferences.setAndroidId(Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID));
         }
 
         //final Place[] tempPlace = new Place[2];

@@ -1,10 +1,8 @@
 package com.example.libby.hiddengems;
 
-import android.app.ListActivity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
-import android.os.Build;
-import android.os.Parcelable;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -38,9 +36,6 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import static java.lang.Double.max;
 import static java.lang.Double.min;
@@ -81,19 +76,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Log.i("Start: ", startPlace.getAddress().toString());
         Log.i("End: ", endPlace.getAddress().toString());
 
-        /*
-        Preferences and budget and radius
-        budget and radius can just be added to the msg
-         */
+
+//        Preferences and budget and radius
+//        budget and radius can just be added to the msg
+
         ArrayList<String> prefs = new ArrayList<>();
         JSONObject startMsg = new JSONObject();
         try {
+            startMsg.put("phone_id", Preferences.getAndroidId());
             startMsg.put("start_long", startPlace.getLatLng().longitude);
             startMsg.put("start_lat", startPlace.getLatLng().latitude);
             startMsg.put("start_date", Preferences.getStartDate());
-            startMsg.put("end_date", Preferences.getEndDate());
             startMsg.put("end_long", endPlace.getLatLng().longitude);
             startMsg.put("end_lat", endPlace.getLatLng().latitude);
+            startMsg.put("end_date", Preferences.getEndDate());
 
             //TODO EMMIE!!!
             startMsg.put("budget", priceRange);
@@ -123,13 +119,30 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        se.setText(s);
         Button b = findViewById(R.id.maps_negativeButton);
         b.setOnClickListener(new View.OnClickListener() {
-                                 @Override
-                                 public void onClick(View v) {
-                                     Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                                     startActivity(intent);
-                                 }
-                             }
+             @Override
+             public void onClick(View v) {
+                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                 startActivity(intent);
+             } }
         );
+
+        Button c = findViewById(R.id.maps_preferences);
+        c.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), RouteActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        Button d = findViewById(R.id.maps_positiveButton);
+        d.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), DriveActivity.class);
+                startActivity(intent);
+            }
+        });
 
         TabHost host = (TabHost)findViewById(R.id.tabHost);
         host.setup();
@@ -250,14 +263,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         if (direction.isOK()) {
                             for(StopInfo ll : Utils.arra) {
                                 mMap.addMarker(new MarkerOptions().position(ll.getLoc()).title(ll.getName()));
-
-
-                                mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-
-                                    @Override public boolean onMarkerClick(Marker marker) {
-                                        return false;
-                                    }
-                                });
+//                                mMap.setOnMarkerClickListener(new StopInfoOnClickListener(getApplicationContext(), ll));
 
                             ArrayList<LatLng> directionPositionList = new ArrayList<>();
                             for (Route r : direction.getRouteList()) {
@@ -268,7 +274,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             //direction.getRouteList().get(0).getLegList().get(0).getDirectionPoint();
 
                             mMap.addPolyline(DirectionConverter.createPolyline(getApplicationContext(), directionPositionList, 5, Color.RED));
-
                         }
 
                     }
@@ -282,11 +287,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     });}
     public void reset(){
         Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
-//                Log.i("temp place selected", "tempPlace: " + tempPlace[0].getName());
-        intent.putExtra("start", (Parcelable) startPlace);
-        intent.putExtra("end", (Parcelable) endPlace);
         startActivity(intent);
 
     }
+    public class StopInfoOnClickListener implements GoogleMap.OnMarkerClickListener {
+        StopInfo info;
+        Context c;
+        public StopInfoOnClickListener(Context cc, StopInfo s) {
+            info = s;
+            c = cc;
+        }
 
+        @Override
+        public boolean onMarkerClick(Marker marker) {
+            Utils.showDialog(c,
+                    true, info.getName(),
+                    true, info.getRating(),
+                    true, info.getDesc(),
+                    false,
+                    true, info.getIndex());
+            return true;
+        }
+    }
 }

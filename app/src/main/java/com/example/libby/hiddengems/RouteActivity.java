@@ -40,6 +40,7 @@ public class RouteActivity extends AppCompatActivity {
         final EditText attractions = (EditText) findViewById(R.id.Attractions);
         final Button clearAttractions = (Button) findViewById(R.id.clear_preferences);
         final Button deleteAttractions = (Button) findViewById(R.id.delete_preferences);
+
         final ArrayList<String> dels = new ArrayList<>();
 
         //Back button
