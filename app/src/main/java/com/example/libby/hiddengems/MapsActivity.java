@@ -60,18 +60,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Place startPlace;
     private Place endPlace;
     private int radius;
-    private boolean[] priceRange;
+    private double priceRange;
     private ArrayList<String> userPrefList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Utils.init(this);
         //UPdate: preferences is a window before map activity
-        startPlace = (Place) getIntent().getParcelableExtra("start");
-        endPlace = (Place) getIntent().getParcelableExtra("end");
-        radius = getIntent().getIntExtra("radius", 30);
-        priceRange = getIntent().getBooleanArrayExtra("priceRange");
-        userPrefList = getIntent().getStringArrayListExtra("preferences");
+//        startPlace = (Place) getIntent().getParcelableExtra("start");
+//        endPlace = (Place) getIntent().getParcelableExtra("end");
+//        radius = getIntent().getIntExtra("radius", 30);
+//        priceRange = getIntent().getBooleanArrayExtra("priceRange");
+//        userPrefList = getIntent().getStringArrayListExtra("preferences");
+        startPlace = Preferences.getStartLoc();
+        endPlace = Preferences.getEndLoc();
+        radius = Preferences.getDetourRadius();
+        priceRange = Preferences.getBudget();
+        userPrefList = Preferences.attractionList;
+
         Log.i("Start: ", startPlace.getAddress().toString());
         Log.i("End: ", endPlace.getAddress().toString());
 
@@ -84,6 +90,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         try {
             startMsg.put("start_long", startPlace.getLatLng().longitude);
             startMsg.put("start_lat", startPlace.getLatLng().latitude);
+            startMsg.put("start_date", Preferences.getStartDate());
+            startMsg.put("end_date", Preferences.getEndDate());
             startMsg.put("end_long", endPlace.getLatLng().longitude);
             startMsg.put("end_lat", endPlace.getLatLng().latitude);
 

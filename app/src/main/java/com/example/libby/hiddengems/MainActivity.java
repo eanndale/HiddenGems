@@ -1,14 +1,22 @@
 package com.example.libby.hiddengems;
 
+import android.app.Activity;
 import android.app.DatePickerDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Rect;
 import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.InputType;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -22,6 +30,7 @@ import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
@@ -36,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        dateFormatter = new SimpleDateFormat("dd-mm-yyyy", Locale.US);
+        dateFormatter = new SimpleDateFormat("mm-dd-yyyy", Locale.US);
 
         if(!Preferences.isInited()) {
             Preferences.init();
@@ -70,21 +79,35 @@ public class MainActivity extends AppCompatActivity {
         });
 
         startDate = (EditText) findViewById(R.id.start_date);
-//        startDate.setInputType(InputType.TYPE_NULL);
-//        final Calendar newCal = Calendar.getInstance();
-//        startDate.setOnClickListener(new View.OnClickListener() {
+        startDate.setText("Start Date - MMDDYYYY");
+//        startDate.addTextChangedListener(new TextWatcher() {
 //            @Override
-//            public void onClick(View v) {
-//                startDate.requestFocus();
-//                DatePickerDialog startDateDialogue = new DatePickerDialog(getApplicationContext(), new DatePickerDialog.OnDateSetListener() {
-//                    @Override
-//                    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-//                        Calendar newDate = Calendar.getInstance();
-//                        newDate.set(year, month, dayOfMonth);
-//                        startDate.setText(dateFormatter.format(newDate.getTime()));
+//            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+//
+//            }
+//
+//            @Override
+//            public void onTextChanged(CharSequence s, int start, int before, int count) {
+//                try {
+//                    int day = Integer.decode(s.toString().substring(0, 2));
+//                    int month = Integer.decode(s.toString().substring(2, 4));
+//                    int year = Integer.decode(s.toString().substring(4));
+//                    if (day > 0 && day < 32 &&
+//                            month > 0 && month <= 12 &&
+//                            year > 1900 && year < 2100) {
+//                        Preferences.setStartDate(s.toString());
 //                    }
-//                }, newCal.get(Calendar.YEAR), newCal.get(Calendar.MONTH), newCal.get(Calendar.DAY_OF_MONTH));
-//                startDateDialogue.show();
+//                    else {
+//                        startDate.setText("Not Valid: Please format like DDMMYYYY");
+//                    }
+//                }
+//                catch(Exception e) {
+//                    startDate.setText("Not Valid: Please format like DDMMYYYY");
+//                }
+//            }
+//
+//            @Override
+//            public void afterTextChanged(Editable s) {
 //            }
 //        });
 
@@ -113,18 +136,38 @@ public class MainActivity extends AppCompatActivity {
         });
 
         endDate = (EditText) findViewById(R.id.end_date);
-//        endDate.setInputType(InputType.TYPE_NULL);
-//        endDate.setOnClickListener(new View.OnClickListener() {
+        endDate.setText("End Date - MMDDYYYY");
+
+//        endDate.addTextChangedListener(new TextWatcher() {
 //            @Override
-//            public void onClick(View v) {
-//                DatePickerDialog startDateDialogue = new DatePickerDialog(getApplicationContext(), new DatePickerDialog.OnDateSetListener() {
-//                    @Override
-//                    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-//                        Calendar newDate = Calendar.getInstance();
-//                        newDate.set(year, month, dayOfMonth);
-//                        endDate.setText(dateFormatter.format(newDate.getTime()));
+//            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+//
+//            }
+//
+//            @Override
+//            public void onTextChanged(CharSequence s, int start, int before, int count) {
+//
+//            }
+//
+//            @Override
+//            public void afterTextChanged(Editable s) {
+//                try {
+//                    int day = Integer.decode(s.toString().substring(0, 2));
+//                    int month = Integer.decode(s.toString().substring(2, 4));
+//                    int year = Integer.decode(s.toString().substring(4));
+//                    if (day > 0 && day < 32 &&
+//                            month > 0 && month <= 12 &&
+//                            year > 1900 && year < 2100) {
+//                        Preferences.setStartDate(s.toString());
 //                    }
-//                }, newCal.get(Calendar.YEAR), newCal.get(Calendar.MONTH), newCal.get(Calendar.DAY_OF_MONTH));
+//                    else {
+//                        endDate.setText("Not Valid: Please format like DDMMYYYY");
+//                    }
+//                }
+//                catch(Exception e) {
+//                    endDate.setText("Not Valid: Please format like DDMMYYYY");
+//                }
+//
 //            }
 //        });
 
@@ -132,7 +175,8 @@ public class MainActivity extends AppCompatActivity {
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(!assigned[0] || !Preferences.getStartLoc().isDataValid() || !assigned[1] || !Preferences.getEndLoc().isDataValid()) {
+                if(!assigned[0] || !Preferences.getStartLoc().isDataValid() || !checkDate(startDate.getText().toString())
+                        || !assigned[1] || !Preferences.getEndLoc().isDataValid() || !checkDate(endDate.getText().toString()) ) {
                     if (!assigned[0]) {
                         Log.e("error", "Start Location is required");
                         Utils.showDialog(MainActivity.this, true, "Almost there...", false,0.0,
@@ -150,9 +194,17 @@ public class MainActivity extends AppCompatActivity {
                         Log.e("error", "End Location is not valid");
                         Utils.showDialog(MainActivity.this, true, "Almost there...", false,0.0,
                                 true, "Cannot find that end location", true, false,0);
+                    } else if (!checkDate(startDate.getText().toString())) {
+                        Utils.showDialog(MainActivity.this, true, "Almost there...", false, 0.0,
+                                true, "Start date must be formatted like MMDDYYYY", true, false, 0);
+                    } else if (!checkDate(endDate.getText().toString())) {
+                        Utils.showDialog(MainActivity.this, true, "Almost there...", false, 0.0,
+                                true, "End date must be formatted like MMDDYYYY", true, false, 0);
                     }
                     return;
                 }
+                Preferences.setStartDate(startDate.getText().toString());
+                Preferences.setEndDate(endDate.getText().toString());
                 Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
 //                Log.i("temp place selected", "tempPlace: " + tempPlace[0].getName());
 //                intent.putExtra("start", (Parcelable) tempPlace[0]);
@@ -172,5 +224,27 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private boolean checkDate(String s) {
+        int month = Integer.decode(s.substring(0, 2));
+        int day = Integer.decode(s.substring(2,4));
+        int year = Integer.decode(s.substring(4));
+        return (month > 0 && month < 13) && (day > 0 && day < 32) && (year > 1900 && year < 2100);
+    }
 
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            View v = getCurrentFocus();
+            if ( v instanceof EditText) {
+                Rect outRect = new Rect();
+                v.getGlobalVisibleRect(outRect);
+                if (!outRect.contains((int)event.getRawX(), (int)event.getRawY())) {
+                    v.clearFocus();
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                }
+            }
+        }
+        return super.dispatchTouchEvent( event );
+    }
 }

@@ -22,6 +22,8 @@ public class Preferences {
     public static void init() {
         startLoc = null;
         endLoc = null;
+        startDate = "";
+        endDate = "";
         budget = 500.0;
         detourRadius = 30;
         attractionList = new ArrayList<>();
@@ -36,6 +38,18 @@ public class Preferences {
     }
     public static Place getStartLoc() {
         return startLoc;
+    }
+    public static void setStartDate(String date) {
+        startDate = date;
+    }
+    public static String getStartDate() {
+        return startDate;
+    }
+    public static void setEndDate(String date) {
+        endDate = date;
+    }
+    public static String getEndDate() {
+        return endDate;
     }
     public static void setEndLoc(Place loc) {
         endLoc = loc;
@@ -52,7 +66,7 @@ public class Preferences {
     public static void setDetourRadius(int d) {
         detourRadius = d;
     }
-    public static double getDetourRadius() {
+    public static int getDetourRadius() {
         return detourRadius;
     }
     public static void addAttraction(String a) {
