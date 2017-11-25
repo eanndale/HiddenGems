@@ -137,7 +137,6 @@ public class MainActivity extends AppCompatActivity {
 
         endDate = (EditText) findViewById(R.id.end_date);
         endDate.setText("End Date - MMDDYYYY");
-
 //        endDate.addTextChangedListener(new TextWatcher() {
 //            @Override
 //            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -175,6 +174,8 @@ public class MainActivity extends AppCompatActivity {
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Preferences.setStartDate(startDate.getText().toString());
+                Preferences.setEndDate(endDate.getText().toString());
                 if(!assigned[0] || !Preferences.getStartLoc().isDataValid() || !checkDate(startDate.getText().toString())
                         || !assigned[1] || !Preferences.getEndLoc().isDataValid() || !checkDate(endDate.getText().toString()) ) {
                     if (!assigned[0]) {
@@ -203,8 +204,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                     return;
                 }
-                Preferences.setStartDate(startDate.getText().toString());
-                Preferences.setEndDate(endDate.getText().toString());
                 Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
 //                Log.i("temp place selected", "tempPlace: " + tempPlace[0].getName());
 //                intent.putExtra("start", (Parcelable) tempPlace[0]);
@@ -225,6 +224,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean checkDate(String s) {
+        if (s.equals("Start Date - MMDDYYYY")) {
+            Preferences.setStartDate("");
+            return true;
+        }
+        else if(s.equals("End Date - MMDDYYYY")) {
+            Preferences.setEndDate("");
+            return true;
+        }
         int month = Integer.decode(s.substring(0, 2));
         int day = Integer.decode(s.substring(2,4));
         int year = Integer.decode(s.substring(4));
