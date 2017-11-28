@@ -267,7 +267,7 @@ def save():
     stops = input["stops"]
 
     sql = conn.cursor()
-    sql.execute( "INSERT INTO Routes (phone_id, start_date, end_date, budget, radius) VALUES (?, ?, ?, ?, ?)", (phone_id, start_date, end_date, budget, radius)) 
+    sql.execute( "INSERT INTO Routes (phone_id, start_date, end_date) VALUES (?, ?, ?)", (phone_id, start_date, end_date)) 
     
     sql = conn.cursor()
     sql.execute("SELECT route_id FROM Routes WHERE phone_id = '%s'" %(phone_id))
@@ -285,6 +285,34 @@ def save():
 # Loads route
 @app.route('/route/load', methods=['GET'])
 def load():
+    gmaps = googlemaps.Client(key='AIzaSyDTo1GrHUKKmtBiVw4xBQxD1Uv24R1ypvY')
+
+    conn = pymysql.connect( host=rds_host, user=name, passwd=password, db=db_name, autocommit=True, connect_timeout=15)
+
+    request = app.current_request
+    input = request.json_body
+
+    phone_id = input['phone_id']
+    sql = conn.cursor()
+    sql.execute("SELECT * FROM Routes WHERE phone_id = '%s'" $ phone_id)
+    sql.fetchall()
+
+    results {
+        places = []
+    }
+
+    sql
+
+    # data = {'place_id': nearest['place_id'],
+    #                     'name': nearest['name'],
+    #                     'latitude': nearest['geometry']['location']['lat'],
+    #                     'longitude': nearest['geometry']['location']['lng'],
+    #                     'rating': nearest['rating'] if 'rating' in nearest else 0,
+    #                     'orig_lat': mid_lat,
+    #                     'orig_long': mid_long,
+    #                     'index': 0
+    #                     }
+
     return 0
 
 
