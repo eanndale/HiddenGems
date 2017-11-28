@@ -87,15 +87,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         try {
             startMsg.put("phone_id", Preferences.getAndroidId());
 
-            startMsg.put("start_long", startPlace.getLatLng().longitude);
-            startMsg.put("start_lat", startPlace.getLatLng().latitude);
-            startMsg.put("start_address", Preferences.getStartLoc().getAddress());
+//            startMsg.put("start_long", startPlace.getLatLng().longitude);
+//            startMsg.put("start_lat", startPlace.getLatLng().latitude);
+//            startMsg.put("start_address", Preferences.getStartLoc().getAddress());
             startMsg.put("start_place_id", Preferences.getStartLoc().getId());
             startMsg.put("start_date", Preferences.getStartDate());
 
-            startMsg.put("end_long", endPlace.getLatLng().longitude);
-            startMsg.put("end_lat", endPlace.getLatLng().latitude);
-            startMsg.put("end_address", Preferences.getEndLoc().getAddress());
+//            startMsg.put("end_long", endPlace.getLatLng().longitude);
+//            startMsg.put("end_lat", endPlace.getLatLng().latitude);
+//            startMsg.put("end_address", Preferences.getEndLoc().getAddress());
             startMsg.put("end_place_id", Preferences.getEndLoc().getId());
             startMsg.put("end_date", Preferences.getEndDate());
 
