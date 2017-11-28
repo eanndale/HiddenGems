@@ -1,5 +1,6 @@
 package com.example.libby.hiddengems;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.AsyncTask;
@@ -115,15 +116,15 @@ public class Utils {
                     Log.e("json", rsp.get("places").toString());
                     JSONArray ja = rsp.getJSONArray("places");
                     arra = new ArrayList<>();
-                    arra.add(new StopInfo(
-                            "Start",
-                            null,
-                            0.0,
-                            Double.valueOf(maps[0].get("start_lat").toString()),
-                            Double.valueOf(maps[0].get("start_long").toString()),
-                            0.0,
-                            0.0,
-                            0));
+//                    arra.add(new StopInfo(
+//                            "Start",
+//                            null,
+//                            0.0,
+//                            Double.valueOf(maps[0].get("start_lat").toString()),
+//                            Double.valueOf(maps[0].get("start_long").toString()),
+//                            0.0,
+//                            0.0,
+//                            0));
                     for(int i = 0; i < ja.length(); i++) {
                         JSONObject m = ja.getJSONObject(i);
                         arra.add(new StopInfo(
@@ -136,15 +137,15 @@ public class Utils {
                                 m.getDouble("orig_long"),
                                 m.getInt("index")));
                     }
-                    arra.add(new StopInfo(
-                            "End",
-                            null,
-                            0.0,
-                            Double.valueOf(maps[0].get("end_lat").toString()),
-                            Double.valueOf(maps[0].get("end_long").toString()),
-                            0.0,
-                            0.0,
-                            arra.size()));
+//                    arra.add(new StopInfo(
+//                            "End",
+//                            null,
+//                            0.0,
+//                            Double.valueOf(maps[0].get("end_lat").toString()),
+//                            Double.valueOf(maps[0].get("end_long").toString()),
+//                            0.0,
+//                            0.0,
+//                            arra.size()));
                 }
                 else {
                     Log.e("json", " return was null");
@@ -163,14 +164,14 @@ public class Utils {
         }
 
     }
-
+//64fffabdc426e18d
     public static void showDialog(Context context,
                                   boolean title_visible, String title,
                                   boolean stars_visible, double starz,
                                   boolean body_visible, String body_text,
                                   boolean dialog_bot_vis,
                                   boolean new_loc_bot_vis, int index) {
-
+//        final AlertDialog.Builder incompleteWarning = new AlertDialog.Builder(context);
         final Dialog incompleteWarning = new Dialog(context);
         incompleteWarning.setContentView(R.layout.dialog);
 
