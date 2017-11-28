@@ -17,7 +17,6 @@ def index():
 @app.route('/route', methods=['POST'])
 def route():
 
-
     rds_host = 'hiddengemsdb.cp1ydngf7sx0.us-east-1.rds.amazonaws.com'
     name = 'HiddenGems'
     password = 'Stargazing1'
@@ -29,10 +28,6 @@ def route():
 
     request = app.current_request
     input = request.json_body
-
-    # start_address = points["start_address"]
-    # end_address = points["end_address"]
-
 
     phone_id = input["phone_id"] # maybe typecast to int
     start_lat = float(input["start_lat"])
