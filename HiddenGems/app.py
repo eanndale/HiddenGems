@@ -217,6 +217,61 @@ def prefs():
 # Saves/updates route.
 @app.route('/route/save', methods=['POST'])
 def save():
+    # accepting request format:
+    #   {
+    #       phone_id
+
+    #       start_lat
+            # start_long
+            # end_lat
+            # end_long
+
+            # start_date
+            # end_date
+
+            # budget
+            # radius
+            # preferences
+            # stops: [{ lat, long, place_id, stop_date}]
+    #   }
+
+    rds_host = 'hiddengemsdb.cp1ydngf7sx0.us-east-1.rds.amazonaws.com'
+    name = 'HiddenGems'
+    password = 'Stargazing1'
+    db_name = 'hiddengemsdb'
+
+    conn = pymysql.connect( host=rds_host, user=name, passwd=password, db=db_name, autocommit=True, connect_timeout=15)
+
+    gmaps = googlemaps.Client(key='AIzaSyDTo1GrHUKKmtBiVw4xBQxD1Uv24R1ypvY')
+
+    request = app.current_request
+    input = request.json_body
+
+    phone_id = input["phone_id"] # maybe typecast to int
+    start_lat = float(input["start_lat"])
+    start_long = float(input["start_long"])
+    start_date = input["start_date"]
+    end_lat = float(input["end_lat"])
+    end_long = float(input["end_long"])
+    end_date = input["end_date"]
+
+    budget = input["budget"] # maybe typecast to float
+    radius = input["radius"] # maybe typecast to int
+    preferences = input["preferences"]
+    stops = input["stops"]
+
+    sql = conn.cursor()
+    sql.execute( "INSERT INTO Routes (phone_id, start_date, end_date, budget, radius) VALUES (?, ?, ?, ?, ?)", (phone_id, start_date, end_date, budget, radius)) 
+    
+    sql = conn.cursor()
+    sql.execute("SELECT route_id FROM Routes WHERE phone_id = '%s'" %(phone_id))
+    route_id = sql.fetchall()
+    for i in range(len(stops))
+        lat = float(stops[i]['lat'])
+        lng = float(stops[i]['lng'])
+        place_id = stops[i]['place_id']
+        sql = conn.cursor("INSERT INTO Stops(route_id, place_id, stop_id, orig_latitude, orig_longitude) VALUES (?,?,?,?,?,?)", (route_id, place_id, i, lat, lng))
+    
     return 0
 
 
