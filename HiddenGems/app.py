@@ -267,18 +267,20 @@ def save():
     stops = input["stops"]
 
     sql = conn.cursor()
-    sql.execute( "INSERT INTO Routes (phone_id, start_date, end_date) VALUES (?, ?, ?)", (phone_id, start_date, end_date)) 
+    sql.execute( "INSERT INTO Routes (phone_id, start_date, end_date) VALUES (?, ?, ?);", (phone_id, start_date, end_date)) 
     
     sql = conn.cursor()
     sql.execute("SELECT route_id FROM Routes WHERE phone_id = '%s'" %(phone_id))
     route_id = sql.fetchall()
     for i in range(len(stops)):
+        orig_lat = float(stops[i]['orig_latitude'])
+        orig_long = float(stops[i]['orig_longitude'])
         lat = float(stops[i]['lat'])
         lng = float(stops[i]['lng'])
         place_id = stops[i]['place_id']
         stop_date = stops[i]['stop_date']
-        sql = conn.cursor("INSERT INTO Stops(route_id, place_id, stop_id, stop_date, orig_latitude, orig_longitude) VALUES (?,?,?,?,?,?)", (route_id, place_id, i, stop_date, lat, lng))
-    
+        sql.execute("INSERT INTO Stops(route_id, place_id, stop_id, stop_date, orig_latitude, orig_longitude) VALUES (?,?,?,?,?,?);", (route_id, place_id, i, stop_date, orig_lat, orig_long))
+
     return 0
 
 
@@ -293,15 +295,36 @@ def load():
     input = request.json_body
 
     phone_id = input['phone_id']
-    sql = conn.cursor()
-    sql.execute("SELECT * FROM Routes WHERE phone_id = '%s'" $ phone_id)
-    sql.fetchall()
 
     results {
-        places = []
+        'places' = []
     }
+    sql = conn.cursor()
+    sql.execute("SELECT * FROM Routes WHERE phone_id = '%s';" %(phone_id))
+    r = sql.fetchall()
+    results["start_date"] = r[2]
+    results["end_date"] = r[3]
+    
+    sql= conn.cursor()
+    sql.execute("SELECT * FROM Users WHERE phone_id = '%s';" %(phone_id))
+    r = sql.fetchall()
+    results["budget"] = r[1]
+    results["radius"] = r[2]
 
-    sql
+    sql= conn.cursor()
+    sql.execute("SELECT attraction FROM Preferences WHERE phone_id = '%s';" %(phone_id))
+    r = sql.fetchall()
+    results["attractions"] = r
+
+    sql= conn.cursor()
+    sql.execute("SELECT * FROM Stops WHERE phone_id = '%s'" %(phone_id) "ORDER BY stop_id ASC;")
+    r = sql.fetchall()
+    for row in r:
+        data = {    'place_id' : row[1],
+                    'stop_id' : row[2],
+                    'stop_date' : row[3],
+                     }
+
 
     # data = {'place_id': nearest['place_id'],
     #                     'name': nearest['name'],
