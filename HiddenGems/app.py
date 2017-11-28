@@ -276,7 +276,8 @@ def save():
         lat = float(stops[i]['lat'])
         lng = float(stops[i]['lng'])
         place_id = stops[i]['place_id']
-        sql = conn.cursor("INSERT INTO Stops(route_id, place_id, stop_id, orig_latitude, orig_longitude) VALUES (?,?,?,?,?,?)", (route_id, place_id, i, lat, lng))
+        stop_date = stops[i]['stop_date']
+        sql = conn.cursor("INSERT INTO Stops(route_id, place_id, stop_id, stop_date, orig_latitude, orig_longitude) VALUES (?,?,?,?,?,?)", (route_id, place_id, i, stop_date, lat, lng))
     
     return 0
 
