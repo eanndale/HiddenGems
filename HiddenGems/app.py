@@ -3,6 +3,7 @@ import pymysql
 import googlemaps
 import json
 import math
+from datetime import datetime
 
 app = Chalice(app_name='HiddenGems')
 app.debug = True
@@ -12,6 +13,17 @@ app.debug = True
 def index():
     return {'hello': 'world'}
 
+# Calculates the midpoint between two points
+# Taken from https://stackoverflow.com/questions/5895832/python-lat-long-midpoint-calculation-gives-wrong-result-when-longitude-90
+def midpoint(p1, p2):
+    lat1, lat2 = math.radians(p1[0]), math.radians(p2[0])
+    lon1, lon2 = math.radians(p1[1]), math.radians(p2[1])
+    dlon = lon2 - lon1
+    dx = math.cos(lat2) * math.cos(dlon)
+    dy = math.cos(lat2) * math.sin(dlon)
+    lat3 = math.atan2(math.sin(lat1) + math.sin(lat2), math.sqrt((math.cos(lat1) + dx) * (math.cos(lat1) + dx) + dy * dy))
+    lon3 = lon1 + math.atan2(dy, math.cos(lat1) + dx)
+    return(math.degrees(lat3), math.degrees(lon3))
 
 # Creates a route and returns it to the user
 @app.route('/route', methods=['POST'])
@@ -29,7 +41,7 @@ def route():
     request = app.current_request
     input = request.json_body
 
-    phone_id = input["phone_id"] # maybe typecast to int
+    phone_id = input["phone_id"]
     start_lat = float(input["start_lat"])
     start_long = float(input["start_long"])
     start_date = input["start_date"]
@@ -37,21 +49,49 @@ def route():
     end_long = float(input["end_long"])
     end_date = input["end_date"]
 
-    budget = input["budget"] # maybe typecast to float
-    radius = input["radius"] # maybe typecast to int
+    budget = float(input["budget"])
+    radius = int(input["radius"])
     preferences = input["preferences"]
 
 
-    # Really bad implementation of midpoints (not accounting for optimal routing)
-    # ------------------------------------------------------------------------------
-
+    # Calculate length of trip
     directions = gmaps.directions(origin=[start_lat, start_long], destination=[end_lat, end_long], mode="driving")
     direct = json.dumps(directions)
     directer = json.loads(direct[1:-1])
     conv_fac = 0.621371
     meters = int(directer['legs'][0]['distance']['value'])
     miles = float(meters) / 1000.0 * conv_fac
-    stops = int(miles / 150) - 1
+
+
+
+    # Calculate time of trip
+    if (start_date and end_date):
+        datetime.strptime(start_date, '%m%d%Y')
+        datetime.strptime(end_date, '%m%d%Y')
+        days = abs((end_date - start_date).days)
+
+        # Calculate number of stops needed
+        if (days == 0):
+            stops = int(miles / 150) - 1
+            if (stops % 2 == 1):
+                stops += 1 # For midpoint calcs, there must be an even number of
+        else:
+            stops = (days + 1) * 2
+            if (stops % 2 == 1):
+                stops += 1
+
+                # Calculate midpoints
+    # lats = range(stops + 2)
+    # longs = range(stops + 2)
+    #
+    # start_lat = lats[0]
+    # start_long = longs[0]
+    # end_lat = lats[stops - 1]
+    # end_long = longs[stops - 1]
+
+    else:
+        stops = int(miles / 150) - 1
+
 
 
     '''
@@ -183,12 +223,96 @@ def prefs():
 # Saves/updates route.
 @app.route('/route/save', methods=['POST'])
 def save():
+    # accepting request format:
+    #   {
+    #       phone_id
+
+    #       start_lat
+            # start_long
+            # end_lat
+            # end_long
+
+            # start_date
+            # end_date
+
+            # budget
+            # radius
+            # preferences
+            # stops: [{ lat, long, place_id, stop_date}]
+    #   }
+
+    rds_host = 'hiddengemsdb.cp1ydngf7sx0.us-east-1.rds.amazonaws.com'
+    name = 'HiddenGems'
+    password = 'Stargazing1'
+    db_name = 'hiddengemsdb'
+
+    conn = pymysql.connect( host=rds_host, user=name, passwd=password, db=db_name, autocommit=True, connect_timeout=15)
+
+    gmaps = googlemaps.Client(key='AIzaSyDTo1GrHUKKmtBiVw4xBQxD1Uv24R1ypvY')
+
+    request = app.current_request
+    input = request.json_body
+
+    phone_id = input["phone_id"] # maybe typecast to int
+    start_lat = float(input["start_lat"])
+    start_long = float(input["start_long"])
+    start_date = input["start_date"]
+    end_lat = float(input["end_lat"])
+    end_long = float(input["end_long"])
+    end_date = input["end_date"]
+
+    budget = input["budget"] # maybe typecast to float
+    radius = input["radius"] # maybe typecast to int
+    preferences = input["preferences"]
+    stops = input["stops"]
+
+    sql = conn.cursor()
+    sql.execute( "INSERT INTO Routes (phone_id, start_date, end_date) VALUES (?, ?, ?)", (phone_id, start_date, end_date)) 
+    
+    sql = conn.cursor()
+    sql.execute("SELECT route_id FROM Routes WHERE phone_id = '%s'" %(phone_id))
+    route_id = sql.fetchall()
+    for i in range(len(stops)):
+        lat = float(stops[i]['lat'])
+        lng = float(stops[i]['lng'])
+        place_id = stops[i]['place_id']
+        stop_date = stops[i]['stop_date']
+        sql = conn.cursor("INSERT INTO Stops(route_id, place_id, stop_id, stop_date, orig_latitude, orig_longitude) VALUES (?,?,?,?,?,?)", (route_id, place_id, i, stop_date, lat, lng))
+    
     return 0
 
 
 # Loads route
 @app.route('/route/load', methods=['GET'])
 def load():
+    gmaps = googlemaps.Client(key='AIzaSyDTo1GrHUKKmtBiVw4xBQxD1Uv24R1ypvY')
+
+    conn = pymysql.connect( host=rds_host, user=name, passwd=password, db=db_name, autocommit=True, connect_timeout=15)
+
+    request = app.current_request
+    input = request.json_body
+
+    phone_id = input['phone_id']
+    sql = conn.cursor()
+    sql.execute("SELECT * FROM Routes WHERE phone_id = '%s'" $ phone_id)
+    sql.fetchall()
+
+    results {
+        places = []
+    }
+
+    sql
+
+    # data = {'place_id': nearest['place_id'],
+    #                     'name': nearest['name'],
+    #                     'latitude': nearest['geometry']['location']['lat'],
+    #                     'longitude': nearest['geometry']['location']['lng'],
+    #                     'rating': nearest['rating'] if 'rating' in nearest else 0,
+    #                     'orig_lat': mid_lat,
+    #                     'orig_long': mid_long,
+    #                     'index': 0
+    #                     }
+
     return 0
 
 

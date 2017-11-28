@@ -49,6 +49,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private String serverKey = "AIzaSyBold8BEkdg3qQosQk7Fz1uWuyl0GJ9JOk";
     private GoogleMap mMap;
 
+    private Context context;
     private ArrayAdapter<String> adapter;
     private ArrayList<String> as = new ArrayList<>();
 
@@ -61,6 +62,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Utils.init(this);
+        context = getApplicationContext();
         //UPdate: preferences is a window before map activity
 //        startPlace = (Place) getIntent().getParcelableExtra("start");
 //        endPlace = (Place) getIntent().getParcelableExtra("end");
@@ -94,7 +96,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             //TODO EMMIE!!!
             startMsg.put("budget", priceRange);
             startMsg.put("radius", radius);
-            startMsg.put("Preferences", userPrefList);
+            startMsg.put("preferences", userPrefList);
 
 //        Map<String, String> startMsg = new HashMap<>();
 //        startMsg.put("start_address", startPlace.getAddress().toString());
@@ -256,39 +258,48 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .to(Utils.arra.get(Utils.arra.size() - 1).getLoc())
                 .waypoints(kun)
                 .transportMode(TransportMode.DRIVING)
-                .execute(new DirectionCallback() {
-                    @Override
-                    public void onDirectionSuccess(Direction direction, String rawBody) {
-                        // Do something here
-                        if (direction.isOK()) {
-                            for(StopInfo ll : Utils.arra) {
-                                mMap.addMarker(new MarkerOptions().position(ll.getLoc()).title(ll.getName()));
-//                                mMap.setOnMarkerClickListener(new StopInfoOnClickListener(getApplicationContext(), ll));
+                .execute(new StopInfoDirectionCallback(getApplicationContext()));
+    }
 
-                            ArrayList<LatLng> directionPositionList = new ArrayList<>();
-                            for (Route r : direction.getRouteList()) {
-                                for (Leg leg : r.getLegList()) {
-                                    directionPositionList.addAll(leg.getDirectionPoint());
-                                }
-                            }
-                            //direction.getRouteList().get(0).getLegList().get(0).getDirectionPoint();
-
-                            mMap.addPolyline(DirectionConverter.createPolyline(getApplicationContext(), directionPositionList, 5, Color.RED));
-                        }
-
-                    }
-
-                }
-
-                @Override
-                public void onDirectionFailure(Throwable t) {
-                    //blah
-                }
-    });}
     public void reset(){
         Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
         startActivity(intent);
 
+    }
+
+    //NOT USED BELOW
+    public class StopInfoDirectionCallback implements DirectionCallback {
+        Context context;
+        public StopInfoDirectionCallback(Context c) {
+            context = c;
+            if (context == null) {
+                Log.e("wtf", "context is null");
+            }
+        }
+        @Override
+        public void onDirectionSuccess(Direction direction, String rawBody) {
+            if (direction.isOK()) {
+                for (StopInfo ll : Utils.arra) {
+                    mMap.addMarker(new MarkerOptions().position(ll.getLoc()).title(ll.getName()));
+//                    mMap.setOnMarkerClickListener(new StopInfoOnClickListener(context, ll));
+
+                    ArrayList<LatLng> directionPositionList = new ArrayList<>();
+                    for (Route r : direction.getRouteList()) {
+                        for (Leg leg : r.getLegList()) {
+                            directionPositionList.addAll(leg.getDirectionPoint());
+                        }
+                    }
+                    //direction.getRouteList().get(0).getLegList().get(0).getDirectionPoint();
+
+                    mMap.addPolyline(DirectionConverter.createPolyline(getApplicationContext(), directionPositionList, 5, Color.RED));
+                }
+            }
+        }
+
+        @Override
+        public void onDirectionFailure(Throwable t) {
+
+        }
     }
     public class StopInfoOnClickListener implements GoogleMap.OnMarkerClickListener {
         StopInfo info;
