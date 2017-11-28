@@ -3,6 +3,7 @@ import pymysql
 import googlemaps
 import json
 import math
+from datetime import datetime
 
 app = Chalice(app_name='HiddenGems')
 app.debug = True
@@ -29,29 +30,45 @@ def route():
     request = app.current_request
     input = request.json_body
 
-    phone_id = input["phone_id"] # maybe typecast to int
+    phone_id = input["phone_id"]
     start_lat = float(input["start_lat"])
     start_long = float(input["start_long"])
-    start_date = input["start_date"]
+    start_date = int(input["start_date"])
     end_lat = float(input["end_lat"])
     end_long = float(input["end_long"])
-    end_date = input["end_date"]
+    end_date = int(input["end_date"])
 
-    budget = input["budget"] # maybe typecast to float
-    radius = input["radius"] # maybe typecast to int
+    budget = float(input["budget"])
+    radius = int(input["radius"])
     preferences = input["preferences"]
 
 
-    # Really bad implementation of midpoints (not accounting for optimal routing)
-    # ------------------------------------------------------------------------------
-
+    # Calculate length of trip
     directions = gmaps.directions(origin=[start_lat, start_long], destination=[end_lat, end_long], mode="driving")
     direct = json.dumps(directions)
     directer = json.loads(direct[1:-1])
     conv_fac = 0.621371
     meters = int(directer['legs'][0]['distance']['value'])
     miles = float(meters) / 1000.0 * conv_fac
-    stops = int(miles / 150) - 1
+
+    # Calculate time of trip
+    datetime.strptime(start_date, '%m%d%Y')
+    datetime.strptime(end_date, '%m%d%Y')
+    days = abs((end_date - start_date).days)
+
+    # Calculate number of stops needed
+    if (days == 0):
+        stops = int(miles / 150) - 1
+    else:
+        stops = (days + 1) * 2
+
+
+    # Calculate midpoints
+
+
+
+    # Really bad implementation of midpoints (not accounting for optimal routing)
+    # ------------------------------------------------------------------------------
 
 
     '''
