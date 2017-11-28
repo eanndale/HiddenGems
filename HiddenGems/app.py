@@ -13,6 +13,17 @@ app.debug = True
 def index():
     return {'hello': 'world'}
 
+# Calculates the midpoint between two points
+# Taken from https://stackoverflow.com/questions/5895832/python-lat-long-midpoint-calculation-gives-wrong-result-when-longitude-90
+def midpoint(p1, p2):
+    lat1, lat2 = math.radians(p1[0]), math.radians(p2[0])
+    lon1, lon2 = math.radians(p1[1]), math.radians(p2[1])
+    dlon = lon2 - lon1
+    dx = math.cos(lat2) * math.cos(dlon)
+    dy = math.cos(lat2) * math.sin(dlon)
+    lat3 = math.atan2(math.sin(lat1) + math.sin(lat2), math.sqrt((math.cos(lat1) + dx) * (math.cos(lat1) + dx) + dy * dy))
+    lon3 = lon1 + math.atan2(dy, math.cos(lat1) + dx)
+    return(math.degrees(lat3), math.degrees(lon3))
 
 # Creates a route and returns it to the user
 @app.route('/route', methods=['POST'])
@@ -59,16 +70,22 @@ def route():
     # Calculate number of stops needed
     if (days == 0):
         stops = int(miles / 150) - 1
+        if (stops % 2 == 1):
+            stops += 1 # For midpoint calcs, there must be an even number of
     else:
         stops = (days + 1) * 2
-
+        if (stops % 2 == 1):
+            stops += 1
 
     # Calculate midpoints
+    lats = range(stops + 2)
+    longs = range(stops + 2)
 
+    start_lat = lats[0]
+    start_long = longs[0]
+    end_lat = lats[stops - 1]
+    end_long = longs[stops - 1]
 
-
-    # Really bad implementation of midpoints (not accounting for optimal routing)
-    # ------------------------------------------------------------------------------
 
 
     '''
