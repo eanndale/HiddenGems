@@ -8,25 +8,25 @@ PRIMARY KEY(place_id)
 
 CREATE TABLE Users (
 phone_id VARCHAR(100) NOT NULL,
-budget FLOAT(10),
-radius INT,
-PRIMARY KEY (phone_id)
+PRIMARY KEY(phone_id)
 );
 
 CREATE TABLE Routes (
-route_id VARCHAR(100) NOT NULL AUTO_INCREMENT,
+route_id INT AUTO_INCREMENT,
 phone_id VARCHAR(100) NOT NULL,
 start_date DATETIME NOT NULL,
 end_date DATETIME NOT NULL,
+budget FLOAT(10) NOT NULL,
+radius INT NOT NULL,
 PRIMARY KEY(route_id),
-FOREIGN KEY (phone_id) REFERENCES Preferences(phone_id) ON DELETE CASCADE
+FOREIGN KEY (phone_id) REFERENCES Users(phone_id) ON DELETE CASCADE
 );
 
 CREATE TABLE Preferences (
-phone_id VARCHAR(100) NOT NULL,
+route_id INT NOT NULL,
 attraction VARCHAR(20) NOT NULL,
-PRIMARY KEY(phone_id, attraction),
-FOREIGN KEY (phone_id) REFERENCES Preferences(phone_id) ON DELETE CASCADE
+PRIMARY KEY(route_id, attraction),
+FOREIGN KEY (route_id) REFERENCES Routes(route_id) ON DELETE CASCADE
 );
 
 CREATE TABLE Stops (

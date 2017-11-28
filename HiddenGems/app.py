@@ -13,17 +13,92 @@ app.debug = True
 def index():
     return {'hello': 'world'}
 
-# Calculates the midpoint between two points
-# Taken from https://stackoverflow.com/questions/5895832/python-lat-long-midpoint-calculation-gives-wrong-result-when-longitude-90
-def midpoint(p1, p2):
-    lat1, lat2 = math.radians(p1[0]), math.radians(p2[0])
-    lon1, lon2 = math.radians(p1[1]), math.radians(p2[1])
-    dlon = lon2 - lon1
-    dx = math.cos(lat2) * math.cos(dlon)
-    dy = math.cos(lat2) * math.sin(dlon)
-    lat3 = math.atan2(math.sin(lat1) + math.sin(lat2), math.sqrt((math.cos(lat1) + dx) * (math.cos(lat1) + dx) + dy * dy))
-    lon3 = lon1 + math.atan2(dy, math.cos(lat1) + dx)
-    return(math.degrees(lat3), math.degrees(lon3))
+
+# --------------------------------------------------------------------------------------------------
+# The following was taken from this link
+# https://gis.stackexchange.com/questions/157693/getting-all-vertex-lat-long-coordinates-every-1-meter-between-two-known-points
+
+# Calculates the distance between two lat, long coordinate pairs
+def getPathLength(lat1,lng1,lat2,lng2):
+    R = 6371000 # radius of earth in m
+    lat1rads = math.radians(lat1)
+    lat2rads = math.radians(lat2)
+    deltaLat = math.radians((lat2-lat1))
+    deltaLng = math.radians((lng2-lng1))
+    a = math.sin(deltaLat/2) * math.sin(deltaLat/2) + math.cos(lat1rads) *
+    math.cos(lat2rads) * math.sin(deltaLng/2) * math.sin(deltaLng/2)
+    c = 2 * math.atan2(math.sqrt(a), math.qrt(1-a))
+    d = R * c
+
+    return d
+
+# Returns the lat/long of a destination point given the start lat, long, aziuth, distance
+def getDestinationLatLong(lat,lng,azimuth,distance):
+    R = 6378.1 #Radius of the Earth in km
+    brng = math.radians(azimuth) #Bearing is degrees converted to radians.
+    d = distance/1000 #Distance m converted to km
+
+    lat1 = math.radians(lat) #Current dd lat point converted to radians
+    lon1 = math.radians(lng) #Current dd long point converted to radians
+
+    lat2 = math.asin( math.sin(lat1) * math.cos(d/R) + math.cos(lat1)* math.sin(d/R)* math.cos(brng))
+
+    lon2 = lon1 + math.atan2(math.sin(brng) * math.sin(d/R)* math.cos(lat1),
+                        math.cos(d/R)- math.sin(lat1)* math.sin(lat2))
+
+    #convert back to degrees
+    lat2 = math.degrees(lat2)
+    lon2 = math.degrees(lon2)
+
+    return[lat2, lon2]
+
+'''
+# Return every coordinate pair between two coordinate pairs given the desired interval
+def main(interval,azimuth,lat1,lng1,lat2,lng2):
+    coords = []
+    d = getPathLength(lat1,lng1,lat2,lng2)
+    remainder, dist = math.modf((d / interval))
+    counter = 1.0
+    coords.append([lat1,lng1])
+    for distance in xrange(1,int(dist)):
+        c = getDestinationLatLong(lat1,lng1,azimuth,counter)
+        counter += 1.0
+        coords.append(c)
+    counter +=1
+    coords.append([lat2,lng2])
+    return coords
+'''
+
+# End of first link's acquired code
+
+# Beginning of second link's acquired code
+
+# Calculates the azimuth given two points
+# Takes in a tuple, returns a float (between 0 and 360)
+def calculate_initial_compass_bearing(pointA, pointB):
+
+    lat1 = math.radians(pointA[0])
+    lat2 = math.radians(pointB[0])
+
+    diffLong = math.radians(pointB[1] - pointA[1])
+
+    x = math.sin(diffLong) * math.cos(lat2)
+    y = math.cos(lat1) * math.sin(lat2) - (math.sin(lat1)
+                                           * math.cos(lat2) * math.cos(diffLong))
+
+    initial_bearing = math.atan2(x, y)
+
+    # Now we have the initial bearing but math.atan2 return values
+    # from -180° to + 180° which is not what we want for a compass bearing
+    # The solution is to normalize the initial bearing as shown below
+    initial_bearing = math.degrees(initial_bearing)
+    compass_bearing = (initial_bearing + 360) % 360
+
+    return compass_bearing
+
+# End of second link's acquired code
+# --------------------------------------------------------------------------------------------------
+
 
 # Creates a route and returns it to the user
 @app.route('/route', methods=['POST'])
@@ -55,16 +130,9 @@ def route():
 
 
     # Calculate length of trip
-    directions = gmaps.directions(origin=[start_lat, start_long], destination=[end_lat, end_long], mode="driving")
-    direct = json.dumps(directions)
-    directer = json.loads(direct[1:-1])
-    conv_fac = 0.621371
-    meters = int(directer['legs'][0]['distance']['value'])
-    miles = float(meters) / 1000.0 * conv_fac
+    miles = getPathLength(start_lat,start_long,end_lat,end_long)
 
-
-
-    # Calculate time of trip
+    # Calculate time of trip (provided dates are given)
     if (start_date and end_date):
         datetime.strptime(start_date, '%m%d%Y')
         datetime.strptime(end_date, '%m%d%Y')
@@ -80,40 +148,28 @@ def route():
             if (stops % 2 == 1):
                 stops += 1
 
-                # Calculate midpoints
-    # lats = range(stops + 2)
-    # longs = range(stops + 2)
-    #
-    # start_lat = lats[0]
-    # start_long = longs[0]
-    # end_lat = lats[stops - 1]
-    # end_long = longs[stops - 1]
 
+    # Calculate number of stops (provided no dates)
     else:
         stops = int(miles / 150) - 1
 
+    # Generate midpoints
 
+    interval = miles / (stops + 1)
 
-    '''
-    R = 6373.0 # radius of Earth in km
+    coords = []
+    remainder, dist = math.modf((d / interval))
+    counter = 1.0
+    coords.append([lat1,lng1])
+    for distance in xrange(1,int(dist)):
+        c = getDestinationLatLong(lat1,lng1,azimuth,counter)
+        counter += 1.0
+        coords.append(c)
+    counter +=1
+    coords.append([lat2,lng2])
+    return coords
 
-    lat1 = math.radians(start_lat)
-    
-    long1 = math.radians(start_long)
-    lat2 = math.radians(end_lat)
-    long2 = math.radians(end_long)
-
-    dlong = long2 - long1
-    dlat = lat2 - lat1
-
-    a =  math.sin(dlat / 2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlong / 2)**2
-    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-
-    distance = R * c
-
-    stops = int(distance / 150) - 1
-    '''
-
+    # Call Google Maps API at each midpoint for attractions and return them in the right format
     results = {
         'places': []
     }
