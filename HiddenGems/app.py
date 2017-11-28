@@ -44,10 +44,10 @@ def route():
     phone_id = input["phone_id"]
     start_lat = float(input["start_lat"])
     start_long = float(input["start_long"])
-    start_date = int(input["start_date"])
+    start_date = input["start_date"]
     end_lat = float(input["end_lat"])
     end_long = float(input["end_long"])
-    end_date = int(input["end_date"])
+    end_date = input["end_date"]
 
     budget = float(input["budget"])
     radius = int(input["radius"])
@@ -62,29 +62,35 @@ def route():
     meters = int(directer['legs'][0]['distance']['value'])
     miles = float(meters) / 1000.0 * conv_fac
 
+
+
     # Calculate time of trip
-    datetime.strptime(start_date, '%m%d%Y')
-    datetime.strptime(end_date, '%m%d%Y')
-    days = abs((end_date - start_date).days)
+    if (start_date and end_date):
+        datetime.strptime(start_date, '%m%d%Y')
+        datetime.strptime(end_date, '%m%d%Y')
+        days = abs((end_date - start_date).days)
 
-    # Calculate number of stops needed
-    if (days == 0):
-        stops = int(miles / 150) - 1
-        if (stops % 2 == 1):
-            stops += 1 # For midpoint calcs, there must be an even number of
+        # Calculate number of stops needed
+        if (days == 0):
+            stops = int(miles / 150) - 1
+            if (stops % 2 == 1):
+                stops += 1 # For midpoint calcs, there must be an even number of
+        else:
+            stops = (days + 1) * 2
+            if (stops % 2 == 1):
+                stops += 1
+
+                # Calculate midpoints
+    # lats = range(stops + 2)
+    # longs = range(stops + 2)
+    #
+    # start_lat = lats[0]
+    # start_long = longs[0]
+    # end_lat = lats[stops - 1]
+    # end_long = longs[stops - 1]
+
     else:
-        stops = (days + 1) * 2
-        if (stops % 2 == 1):
-            stops += 1
-
-    # Calculate midpoints
-    lats = range(stops + 2)
-    longs = range(stops + 2)
-
-    start_lat = lats[0]
-    start_long = longs[0]
-    end_lat = lats[stops - 1]
-    end_long = longs[stops - 1]
+        stops = int(miles / 150) - 1
 
 
 
@@ -266,7 +272,7 @@ def save():
     sql = conn.cursor()
     sql.execute("SELECT route_id FROM Routes WHERE phone_id = '%s'" %(phone_id))
     route_id = sql.fetchall()
-    for i in range(len(stops))
+    for i in range(len(stops)):
         lat = float(stops[i]['lat'])
         lng = float(stops[i]['lng'])
         place_id = stops[i]['place_id']

@@ -6,7 +6,7 @@ longitude FLOAT NOT NULL,
 PRIMARY KEY(place_id)
 );
 
-CREATE TABLE Preferences (
+CREATE TABLE Users (
 phone_id VARCHAR(100) NOT NULL,
 budget FLOAT(10),
 radius INT,
@@ -22,7 +22,7 @@ PRIMARY KEY(route_id),
 FOREIGN KEY (phone_id) REFERENCES Preferences(phone_id) ON DELETE CASCADE
 );
 
-CREATE TABLE Attractions (
+CREATE TABLE Preferences (
 phone_id VARCHAR(100) NOT NULL,
 attraction VARCHAR(20) NOT NULL,
 PRIMARY KEY(phone_id, attraction),
