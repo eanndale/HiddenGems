@@ -18,13 +18,15 @@ start_date DATETIME NOT NULL,
 end_date DATETIME NOT NULL,
 budget FLOAT(10) NOT NULL,
 radius INT NOT NULL,
+isDriving BOOL DEFAULT 0,
+index INT,
 PRIMARY KEY(route_id),
 FOREIGN KEY (phone_id) REFERENCES Users(phone_id) ON DELETE CASCADE
 );
 
-CREATE TABLE Preferences (
+CREATE TABLE Keywords (
 route_id INT NOT NULL,
-attraction VARCHAR(20) NOT NULL,
+keyword VARCHAR(20) NOT NULL,
 PRIMARY KEY(route_id, attraction),
 FOREIGN KEY (route_id) REFERENCES Routes(route_id) ON DELETE CASCADE
 );
