@@ -14,30 +14,32 @@ app.debug = True
 
 @app.route('/')
 def index():
-return {'hello': 'world'}
+    return {'hello': 'world'}
 
 
 def weather(lat_, lon_):
-#https://github.com/csparpa/pyowm
-#parameters = {"lat": , "lon": }
-key = "5a61d0979d0298f923b45e24d5cfd6ee"
-#
-owm = pyowm.OWM(key)  # You MUST provide a valid API key
-
-#obs = owm.weather_at_place('Detriot,MI')                    # Toponym
-#obs = owm.weather_at_id(2643741)                           # City ID
-obs = owm.weather_at_coords(lat_, lon_)           # lat/lon
-
-weather = obs.get_weather()
-
-
-print(weather.get_temperature('fahrenheit'))
-
-# Get weather short status
-print(weather.get_status())
-
-# Get detailed weather status
-print(weather.get_detailed_status())
+    #https://github.com/csparpa/pyowm
+    #parameters = {"lat": , "lon": }
+    key = "5a61d0979d0298f923b45e24d5cfd6ee"
+    #
+    owm = pyowm.OWM(key)  # You MUST provide a valid API key
+    
+    #obs = owm.weather_at_place('Detriot,MI')                    # Toponym
+    #obs = owm.weather_at_id(2643741)                           # City ID
+    obs = owm.weather_at_coords(lat_, lon_)           # lat/lon
+    
+    weather = obs.get_weather()
+    
+    
+    print(weather.get_temperature('fahrenheit'))
+    
+    # Get weather short status
+    print(weather.get_status())
+    
+    # Get detailed weather status
+    print(weather.get_detailed_status())
+    
+    return weather
 # --------------------------------------------------------------------------------------------------
 # The following was taken from this link
 # https://gis.stackexchange.com/questions/157693/getting-all-vertex-lat-long-coordinates-every-1-meter-between-two-known-points
@@ -49,8 +51,7 @@ def getPathLength(lat1,lng1,lat2,lng2):
     lat2rads = math.radians(lat2)
     deltaLat = math.radians((lat2-lat1))
     deltaLng = math.radians((lng2-lng1))
-    a = math.sin(deltaLat/2) * math.sin(deltaLat/2) + math.cos(lat1rads) *
-    math.cos(lat2rads) * math.sin(deltaLng/2) * math.sin(deltaLng/2)
+    a = math.sin(deltaLat/2) * math.sin(deltaLat/2) + math.cos(lat1rads) * math.cos(lat2rads) * math.sin(deltaLng/2) * math.sin(deltaLng/2)
     c = 2 * math.atan2(math.sqrt(a), math.qrt(1-a))
     d = R * c
 
@@ -376,9 +377,8 @@ def load():
 
     phone_id = input['phone_id']
 
-    results {
-        'places' = []
-    }
+    results['places'] = []
+    
     sql = conn.cursor()
     sql.execute("SELECT * FROM Routes WHERE phone_id = '%s';" %(phone_id))
     r = sql.fetchall()
@@ -397,7 +397,7 @@ def load():
     results["attractions"] = r
 
     sql= conn.cursor()
-    sql.execute("SELECT * FROM Stops WHERE phone_id = '%s'" %(phone_id) "ORDER BY stop_id ASC;")
+    sql.execute("SELECT * FROM Stops WHERE phone_id = '%s' ORDER BY stop_id ASC;" %(phone_id))
     r = sql.fetchall()
     for row in r:
         data = {    'place_id' : row[1],
