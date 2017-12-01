@@ -27,7 +27,7 @@ FOREIGN KEY (phone_id) REFERENCES Users(phone_id) ON DELETE CASCADE
 CREATE TABLE Keywords (
 route_id INT NOT NULL,
 keyword VARCHAR(20) NOT NULL,
-PRIMARY KEY(route_id, attraction),
+PRIMARY KEY(route_id, keyword),
 FOREIGN KEY (route_id) REFERENCES Routes(route_id) ON DELETE CASCADE
 );
 

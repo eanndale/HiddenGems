@@ -102,7 +102,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             //TODO EMMIE!!!
             startMsg.put("budget", priceRange);
             startMsg.put("radius", radius);
-            startMsg.put("preferences", userPrefList);
+            if (userPrefList.isEmpty()) {
+                userPrefList.add("attractions");
+                startMsg.put("keywords", userPrefList);
+            }
+            else {
+                startMsg.put("keywords", userPrefList);
+            }
 
 //        Map<String, String> startMsg = new HashMap<>();
 //        startMsg.put("start_address", startPlace.getAddress().toString());
