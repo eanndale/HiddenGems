@@ -258,6 +258,12 @@ public class MainActivity extends AppCompatActivity {
                     InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
                 }
+                if (v.getId() == R.id.start_date && checkDate(((EditText) v).getText().toString())) {
+                    Preferences.setStartDate(((EditText) v).getText().toString());
+                }
+                else if(v.getId() == R.id.end_date && checkDate(((EditText) v).getText().toString())) {
+                    Preferences.setEndDate(((EditText) v).getText().toString());
+                }
             }
         }
         return super.dispatchTouchEvent( event );
