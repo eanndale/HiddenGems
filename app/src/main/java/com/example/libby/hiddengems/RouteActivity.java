@@ -106,6 +106,7 @@ public class RouteActivity extends AppCompatActivity {
         });
 
         //Detour Radius Setup
+        seekBar.setProgress(Preferences.getDetourRadius());
         progress.setText(seekBar.getProgress() + " miles");
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 //            int progress = 0;
