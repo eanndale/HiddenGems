@@ -82,6 +82,9 @@ public class MainActivity extends AppCompatActivity {
 
         startDate = (EditText) findViewById(R.id.start_date);
         startDate.setText("Start Date - MMDDYYYY");
+        if (!Preferences.getStartDate().equals("")) {
+            startDate.setText(Preferences.getStartDate());
+        }
 //        startDate.addTextChangedListener(new TextWatcher() {
 //            @Override
 //            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -139,6 +142,9 @@ public class MainActivity extends AppCompatActivity {
 
         endDate = (EditText) findViewById(R.id.end_date);
         endDate.setText("End Date - MMDDYYYY");
+        if (!Preferences.getEndDate().equals("")) {
+            endDate.setText(Preferences.getEndDate());
+        }
 //        endDate.addTextChangedListener(new TextWatcher() {
 //            @Override
 //            public void beforeTextChanged(CharSequence s, int start, int count, int after) {

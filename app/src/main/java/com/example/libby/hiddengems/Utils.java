@@ -37,6 +37,12 @@ public class Utils {
         ma = m;
     }
 
+    public static void reset() {
+        sending = false;
+        mapReady = false;
+        arra = new ArrayList<>();
+    }
+
     public static JSONObject makeRequest(String path, JSONObject params) throws Exception
     {
         //instantiates httpclient to make request
