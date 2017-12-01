@@ -3,14 +3,10 @@ import pymysql
 import googlemaps
 import json
 import math
-<<<<<<< HEAD
-import datetime
-=======
 import requests
-import pyowm
+# import pyowm
 from urllib.request import urlopen
 from datetime import datetime
->>>>>>> 19ae4865b39047a10675b1c2b76ed381710dd7fb
 
 app = Chalice(app_name='HiddenGems')
 app.debug = True
@@ -213,7 +209,7 @@ def route():
             'orig_lat': start_lat,
             'orig_long': start_long,
             'index': 0,
-            'date': strp_start_date.strftime("%m%d%Y")
+            'date': strp_start_date.strftime("%m%d%Y") if start_date else ''
     }
     results['places'].append(data)
 
@@ -235,7 +231,7 @@ def route():
                     'orig_lat': coords[i][0],
                     'orig_long': coords[i][1],
                     'index': 0,
-                    'date': (strp_start_date + datetime.timedelta(days=i/2)).strftime("%m%d%Y")
+                    'date': (strp_start_date + datetime.timedelta(days=i/2)).strftime("%m%d%Y") if start_date else ''
                     }
             results['places'].append(data)
 
@@ -248,7 +244,7 @@ def route():
             'orig_lat': end_lat,
             'orig_long': end_long,
             'index': 0,
-            'date': strp_end_date.strftime("%m%d%Y")
+            'date': strp_end_date.strftime("%m%d%Y") if start_date else ''
     }
     results['places'].append(data)
 
