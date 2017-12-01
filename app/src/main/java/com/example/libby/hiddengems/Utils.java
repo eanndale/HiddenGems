@@ -189,6 +189,7 @@ public class Utils {
             ratingBar.setRating((float) starz);
             ratingBar.setStepSize(0.1f);
             ratingBar.setVisibility(View.VISIBLE);
+            ratingBar.setIsIndicator(true);
         }
         else {
             ratingBar.setVisibility(View.INVISIBLE);
