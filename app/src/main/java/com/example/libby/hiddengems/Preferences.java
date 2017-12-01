@@ -30,6 +30,7 @@ public class Preferences {
         attractionList = new ArrayList<>();
         attractionList.add("Museum");
         attractionList.add("Natural Landmarks");
+        inited = true;
     }
     public static boolean isInited() {
         return inited;
