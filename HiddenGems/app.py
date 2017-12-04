@@ -8,6 +8,8 @@ import requests
 from urllib.request import urlopen
 from datetime import datetime
 
+# -*- coding: utf-8 -*-
+
 app = Chalice(app_name='HiddenGems')
 app.debug = True
 
@@ -366,34 +368,43 @@ def save():
     input = request.json_body
 
     phone_id = input["phone_id"] # maybe typecast to int
-    start_lat = float(input["start_lat"])
-    start_long = float(input["start_long"])
+    start_place_id = float(input["start_place_id"])
+    # start_long = float(input["start_long"])
     start_date = input["start_date"]
-    end_lat = float(input["end_lat"])
-    end_long = float(input["end_long"])
+    end_place_id = float(input["end_place_id"])
+    # end_long = float(input["end_long"])
     end_date = input["end_date"]
 
     budget = input["budget"] # maybe typecast to float
     radius = input["radius"] # maybe typecast to int
-    preferences = input["preferences"]
-    stops = input["stops"]
+    keywords = input["keywords"]
+    stops = input["places"]
 
     sql = conn.cursor()
-    sql.execute( "INSERT INTO Routes (phone_id, start_date, end_date) VALUES (?, ?, ?);", (phone_id, start_date, end_date)) 
+    sql.execute( "INSERT INTO Routes (phone_id, start_date, end_date, budget, radius) VALUES (?, ?, ?, ?, ?);", (phone_id, start_date, end_date, budget, radius, ind)) 
     
+    for keyword in keywords:
+        sql = conn.cursor()
+        sql.execute("INSERT INTO Keywords(route_id, keyword) VALUES (?, ?);", (route_id, keyword))
+   
     sql = conn.cursor()
     sql.execute("SELECT route_id FROM Routes WHERE phone_id = '%s'" %(phone_id))
     route_id = sql.fetchall()
     for i in range(len(stops)):
-        orig_lat = float(stops[i]['orig_latitude'])
-        orig_long = float(stops[i]['orig_longitude'])
-        lat = float(stops[i]['lat'])
-        lng = float(stops[i]['lng'])
+        orig_lat = float(stops[i]['orig_lat'])
+        orig_long = float(stops[i]['orig_long'])
+        lat = float(stops[i]['lattitude'])
+        lng = float(stops[i]['longitude'])
+        # index = stops[i]["index"]
         place_id = stops[i]['place_id']
-        stop_date = stops[i]['stop_date']
+        # stop_date = stops[i]['stop_date'] ????
+        name = stops[i]['name']
+        rating = stops[i]['rating']
+        sql = conn.cursor()
         sql.execute("INSERT INTO Stops(route_id, place_id, stop_id, stop_date, orig_latitude, orig_longitude) VALUES (?,?,?,?,?,?);", (route_id, place_id, i, stop_date, orig_lat, orig_long))
-
-    return 0
+        sql2 = conn.cursor()
+        sql2.execute("INSERT INTO Places(place_id, name, latitude, longitude) VALUES (?, ?, ?, ?);", place_id, name, lat, lng)
+    return "done" 
 
 
 # Loads route
