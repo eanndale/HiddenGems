@@ -17,19 +17,38 @@ def index():
     return {'hello': 'world'}
 
 
+def forecast(lat_, lon_):
+    key = "5a61d0979d0298f923b45e24d5cfd6ee"
+
+    url = 'http://api.openweathermap.org/data/2.5/forecast?lat=' + str(lat_) + '&lon=' + str(lon_) + '&APPID=' + key 
+    
+    response = requests.get(url)
+    
+    response_string = response.content.decode("utf-8")
+    
+    json_object = json.loads(response_string)
+    
+    return json_object
+    
+    
+
 def weather(lat_, lon_):
     #https://github.com/csparpa/pyowm
     #parameters = {"lat": , "lon": }
     key = "5a61d0979d0298f923b45e24d5cfd6ee"
-    #
+    
+    #url = 'https://data.ny.gov/resource/rugn-h2q7.json'
+    url = 'https://data.ny.gov/resource/rugn-h2q7.json?longitude=-78.60'
+    response = requests.get(url)
+    
+    print(response.content)
     owm = pyowm.OWM(key)  # You MUST provide a valid API key
     
     #obs = owm.weather_at_place('Detriot,MI')                    # Toponym
     #obs = owm.weather_at_id(2643741)                           # City ID
     obs = owm.weather_at_coords(lat_, lon_)           # lat/lon
-    
+    #obs = owm.daily_forecast('London,uk', limit = 5)
     weather = obs.get_weather()
-    
     
     print(weather.get_temperature('fahrenheit'))
     
@@ -40,6 +59,7 @@ def weather(lat_, lon_):
     print(weather.get_detailed_status())
     
     return weather
+
 # --------------------------------------------------------------------------------------------------
 # The following was taken from this link
 # https://gis.stackexchange.com/questions/157693/getting-all-vertex-lat-long-coordinates-every-1-meter-between-two-known-points
