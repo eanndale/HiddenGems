@@ -32,16 +32,11 @@ def forecast(lat_, lon_):
     
     
 
-def weather(lat_, lon_):
+def get_weather_object(lat_, lon_):
     #https://github.com/csparpa/pyowm
     #parameters = {"lat": , "lon": }
     key = "5a61d0979d0298f923b45e24d5cfd6ee"
     
-    #url = 'https://data.ny.gov/resource/rugn-h2q7.json'
-    url = 'https://data.ny.gov/resource/rugn-h2q7.json?longitude=-78.60'
-    response = requests.get(url)
-    
-    print(response.content)
     owm = pyowm.OWM(key)  # You MUST provide a valid API key
     
     #obs = owm.weather_at_place('Detriot,MI')                    # Toponym
@@ -50,16 +45,32 @@ def weather(lat_, lon_):
     #obs = owm.daily_forecast('London,uk', limit = 5)
     weather = obs.get_weather()
     
-    print(weather.get_temperature('fahrenheit'))
+    #print(weather.get_temperature('fahrenheit'))
     
     # Get weather short status
-    print(weather.get_status())
+    #print(weather.get_status())
     
     # Get detailed weather status
-    print(weather.get_detailed_status())
+    #print(weather.get_detailed_status())
     
     return weather
 
+def get_temperature(lat_, lon_):
+    weather_object = get_weather_object(lat_,lon_)
+    
+    return weather_object.get_temperature('fahrenheit');
+
+def get_status(lat_,lon_):
+    weather_object = get_weather_object(lat_,lon_)
+    
+    return weather_object.get_status();
+
+def get_detailed_status(lat_,lon_):
+    weather_object = get_weather_object(lat_,lon_)
+    
+    return weather_object.get_detailed_status();
+    
+    
 # --------------------------------------------------------------------------------------------------
 # The following was taken from this link
 # https://gis.stackexchange.com/questions/157693/getting-all-vertex-lat-long-coordinates-every-1-meter-between-two-known-points
