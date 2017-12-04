@@ -37,6 +37,12 @@ public class Utils {
         ma = m;
     }
 
+    public static void reset() {
+        sending = false;
+        mapReady = false;
+        arra = new ArrayList<>();
+    }
+
     public static JSONObject makeRequest(String path, JSONObject params) throws Exception
     {
         //instantiates httpclient to make request
@@ -189,6 +195,7 @@ public class Utils {
             ratingBar.setRating((float) starz);
             ratingBar.setStepSize(0.1f);
             ratingBar.setVisibility(View.VISIBLE);
+            ratingBar.setIsIndicator(true);
         }
         else {
             ratingBar.setVisibility(View.INVISIBLE);

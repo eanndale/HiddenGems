@@ -82,6 +82,9 @@ public class MainActivity extends AppCompatActivity {
 
         startDate = (EditText) findViewById(R.id.start_date);
         startDate.setText("Start Date - MMDDYYYY");
+        if (!Preferences.getStartDate().equals("")) {
+            startDate.setText(Preferences.getStartDate());
+        }
 //        startDate.addTextChangedListener(new TextWatcher() {
 //            @Override
 //            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -139,6 +142,9 @@ public class MainActivity extends AppCompatActivity {
 
         endDate = (EditText) findViewById(R.id.end_date);
         endDate.setText("End Date - MMDDYYYY");
+        if (!Preferences.getEndDate().equals("")) {
+            endDate.setText(Preferences.getEndDate());
+        }
 //        endDate.addTextChangedListener(new TextWatcher() {
 //            @Override
 //            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -251,6 +257,12 @@ public class MainActivity extends AppCompatActivity {
                     v.clearFocus();
                     InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                }
+                if (v.getId() == R.id.start_date && checkDate(((EditText) v).getText().toString())) {
+                    Preferences.setStartDate(((EditText) v).getText().toString());
+                }
+                else if(v.getId() == R.id.end_date && checkDate(((EditText) v).getText().toString())) {
+                    Preferences.setEndDate(((EditText) v).getText().toString());
                 }
             }
         }
