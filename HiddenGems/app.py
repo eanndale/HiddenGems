@@ -7,6 +7,8 @@ import requests
 # import pyowm
 from urllib.request import urlopen
 import datetime
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 app = Chalice(app_name='HiddenGems')
 app.debug = True
@@ -17,29 +19,60 @@ def index():
     return {'hello': 'world'}
 
 
-def weather(lat_, lon_):
+def forecast(lat_, lon_):
+    key = "5a61d0979d0298f923b45e24d5cfd6ee"
+
+    url = 'http://api.openweathermap.org/data/2.5/forecast?lat=' + str(lat_) + '&lon=' + str(lon_) + '&APPID=' + key 
+    
+    response = requests.get(url)
+    
+    response_string = response.content.decode("utf-8")
+    
+    json_object = json.loads(response_string)
+    
+    return json_object
+    
+    
+
+def get_weather_object(lat_, lon_):
     #https://github.com/csparpa/pyowm
     #parameters = {"lat": , "lon": }
     key = "5a61d0979d0298f923b45e24d5cfd6ee"
-    #
+    
     owm = pyowm.OWM(key)  # You MUST provide a valid API key
     
     #obs = owm.weather_at_place('Detriot,MI')                    # Toponym
     #obs = owm.weather_at_id(2643741)                           # City ID
     obs = owm.weather_at_coords(lat_, lon_)           # lat/lon
-    
+    #obs = owm.daily_forecast('London,uk', limit = 5)
     weather = obs.get_weather()
     
-    
-    print(weather.get_temperature('fahrenheit'))
+    #print(weather.get_temperature('fahrenheit'))
     
     # Get weather short status
-    print(weather.get_status())
+    #print(weather.get_status())
     
     # Get detailed weather status
-    print(weather.get_detailed_status())
+    #print(weather.get_detailed_status())
     
     return weather
+
+def get_temperature(lat_, lon_):
+    weather_object = get_weather_object(lat_,lon_)
+    
+    return weather_object.get_temperature('fahrenheit');
+
+def get_status(lat_,lon_):
+    weather_object = get_weather_object(lat_,lon_)
+    
+    return weather_object.get_status();
+
+def get_detailed_status(lat_,lon_):
+    weather_object = get_weather_object(lat_,lon_)
+    
+    return weather_object.get_detailed_status();
+    
+    
 # --------------------------------------------------------------------------------------------------
 # The following was taken from this link
 # https://gis.stackexchange.com/questions/157693/getting-all-vertex-lat-long-coordinates-every-1-meter-between-two-known-points
@@ -98,7 +131,7 @@ def calculate_initial_compass_bearing(pointA, pointB):
     initial_bearing = math.atan2(x, y)
 
     # Now we have the initial bearing but math.atan2 return values
-    # from -180° to + 180° which is not what we want for a compass bearing
+    # from -180 to + 180 which is not what we want for a compass bearing
     # The solution is to normalize the initial bearing as shown below
     initial_bearing = math.degrees(initial_bearing)
     compass_bearing = (initial_bearing + 360) % 360
@@ -356,7 +389,7 @@ def save():
     rds_host = 'hiddengemsdb.cp1ydngf7sx0.us-east-1.rds.amazonaws.com'
     name = 'HiddenGems'
     password = 'Stargazing1'
-    db_name = 'hiddengemsdb'
+    db_name = 'HiddenGems'
 
     conn = pymysql.connect( host=rds_host, user=name, passwd=password, db=db_name, autocommit=True, connect_timeout=15)
 
@@ -366,121 +399,142 @@ def save():
     input = request.json_body
 
     phone_id = input["phone_id"] # maybe typecast to int
-    start_lat = float(input["start_lat"])
-    start_long = float(input["start_long"])
+    start_place_id = input["start_place_id"]
+    # start_long = float(input["start_long"])
     start_date = input["start_date"]
-    end_lat = float(input["end_lat"])
-    end_long = float(input["end_long"])
+    end_place_id = input["end_place_id"]
+    # end_long = float(input["end_long"])
     end_date = input["end_date"]
 
     budget = input["budget"] # maybe typecast to float
     radius = input["radius"] # maybe typecast to int
-    preferences = input["preferences"]
-    stops = input["stops"]
+    keywords = input["keywords"]
+    stops = input["places"]
 
-    sql = conn.cursor()
-    sql.execute( "INSERT INTO Routes (phone_id, start_date, end_date) VALUES (?, ?, ?);", (phone_id, start_date, end_date)) 
+    # sql = conn.cursor()
+    # sql.execute("INSERT INTO Users (phone_id) VALUES (%s);", (phone_id))
     
+    # sql = conn.cursor()
+    # sql.execute( "INSERT INTO Routes (phone_id, start_date, end_date, budget, radius) VALUES (%s, %s, %s, %s, %s);", (phone_id, start_date, end_date, budget, radius)) 
+    
+   
     sql = conn.cursor()
     sql.execute("SELECT route_id FROM Routes WHERE phone_id = '%s'" %(phone_id))
     route_id = sql.fetchall()
-    for i in range(len(stops)):
-        orig_lat = float(stops[i]['orig_latitude'])
-        orig_long = float(stops[i]['orig_longitude'])
-        lat = float(stops[i]['lat'])
-        lng = float(stops[i]['lng'])
-        place_id = stops[i]['place_id']
-        stop_date = stops[i]['stop_date']
-        sql.execute("INSERT INTO Stops(route_id, place_id, stop_id, stop_date, orig_latitude, orig_longitude) VALUES (?,?,?,?,?,?);", (route_id, place_id, i, stop_date, orig_lat, orig_long))
 
-    return 0
+    # for keyword in keywords:
+    #     sql = conn.cursor()
+    #     sql.execute("INSERT INTO Keywords(route_id, keyword) VALUES (%s, %s);", (route_id, keyword))
+
+    for i in range(len(stops)):
+        orig_lat = float(stops[i]['orig_lat'])
+        orig_long = float(stops[i]['orig_long'])
+        lat = float(stops[i]['latitude'])
+        lng = float(stops[i]['longitude'])
+        stop_id = float(i)
+        # index = stops[i]["index"]
+        place_id = stops[i]['placeid']
+        # stop_date = stops[i]['stop_date'] ????
+        name = stops[i]['name']
+        rating = stops[i]['rating']
+        sql2 = conn.cursor()
+        sql2.execute("INSERT INTO Places(place_id, name, latitude, longitude) VALUES (%s, %s, %s, %s);", (place_id, name, lat, lng))
+        sql = conn.cursor()
+        # sql.execute("INSERT INTO Stops(route_id, place_id, stop_id, stop_date, orig_latitude, orig_longitude) VALUES (?,?,?,?,?,?);", (route_id, place_id, i, stop_date, orig_lat, orig_long))
+        sql.execute("INSERT INTO Stops(route_id, place_id, stop_id, orig_latitude, orig_longitude) VALUES (%s, %s, %s, %s, %s);", (route_id, place_id, stop_id, orig_lat, orig_long))
+        
+    done = {
+        'done': 'true'
+    }
+       
+    return done 
 
 
 # Loads route
-# @app.route('/route/load', methods=['GET'])
-# def load():
-#     # gmaps = googlemaps.Client(key='AIzaSyDTo1GrHUKKmtBiVw4xBQxD1Uv24R1ypvY')
-#     gmaps = googlemaps.Client(key='AIzaSyD_O6TM3vX-EbHpsSwVu-DPsfCxRar7xJo')
-#     #
-#     conn = pymysql.connect( host=rds_host, user=name, passwd=password, db=db_name, autocommit=True, connect_timeout=15)
-#
-#     request = app.current_request
-#     input = request.json_body
-#
-#     phone_id = input['phone_id']
-#
-#     #start and end location, start and end dates, stops, preferences, long/lat, place ID, place name, description
-#
-#
-#     results = {
-#         "route_id" : -1,
-#         "places": {},
-#         "keywords": [],
-#         "budget": -1,
-#         "start_date":"",
-#         "end_date":"",
-#         "radius": 10,
-#         "index": 0,
-#         "isDriving": 'false'
-#     }
-#
-#     #get basics from Route table
-#     sql = conn.cursor()
-#     sql.execute("SELECT * FROM Routes WHERE phone_id = '%s';" %(phone_id))
-#     r = sql.fetchall()
-#     results["start_date"] = r[2]
-#     results["end_date"] = r[3]
-#     results["budget"] = r[4]
-#     results["radius"] = r[5]
-#     results["index"] = r[7]
-#     results["route_id"] = r[0]
-#
-#
-#     #get keywords for route
-#     sql= conn.cursor()
-#     sql.execute("SELECT keyword FROM Keywords WHERE route_id = '%d';" %(results["route_id"]))
-#     r = sql.fetchall()
-#     for keyword in r:
-#          results["keywords"].append(keyword)
-#
-#
-#     #place:
-#     # long, lat,
-#     # name,
-#     # place id, stop id,
-#     # stopDate,
-#     # orig_latitude, orig_longitude
-#
-#     #get details and reviews later?
-#
-#
-#     #get all information from stops, place in "places" dictionary in order
-#     sql= conn.cursor()
-#     sql.execute("SELECT * FROM Stops WHERE phone_id = '%d'" %(results["route_id"]) "ORDER BY stop_id ASC;")
-#     r = sql.fetchall()
-#
-#     sql2 = conn.cursor()
-#     sql2.execute("SELECT * FROM Places;")
-#     r2 = sql2.fetchall()
-#
-#     for row1 in r:
-#         tempDict = {}
-#         stop_id = row1[2]
-#         place_id = row1[1]
-#         for row2 in r2:
-#             if row2[0] == place_id:
-#                 tempDict = {
-#                     "place_id" : place_id,
-#                     "name" : row2[1],
-#                     "stop_date" : row1[3],
-#                     "orig_latitude" : row1[4],
-#                     "orig_longitude" : row1[5],
-#                     "latitude" : row2[2],
-#                     "longitude" : row2[3]
-#                 }
-#             break
-#         results["places"][stop_id] = tempDict
-#     return results
+@app.route('/route/load', methods=['GET'])
+def load():
+    # gmaps = googlemaps.Client(key='AIzaSyDTo1GrHUKKmtBiVw4xBQxD1Uv24R1ypvY')
+    gmaps = googlemaps.Client(key='AIzaSyD_O6TM3vX-EbHpsSwVu-DPsfCxRar7xJo')
+    #
+    conn = pymysql.connect( host=rds_host, user=name, passwd=password, db=db_name, autocommit=True, connect_timeout=15)
+    
+    request = app.current_request
+    input = request.json_body
+    
+    phone_id = input['phone_id']
+    
+    #start and end location, start and end dates, stops, preferences, long/lat, place ID, place name, description
+
+
+    results = {
+        "route_id" : -1,
+        "places": {},
+        "keywords": [],
+        "budget": -1,
+        "start_date":"",
+        "end_date":"",
+        "radius": 10,
+        "index": 0,
+        "isDriving": 'false'
+    }
+    
+    #get basics from Route table
+    sql = conn.cursor()
+    sql.execute("SELECT * FROM Routes WHERE phone_id = '%s';" %(phone_id))
+    r = sql.fetchall()
+    results["start_date"] = r[2]
+    results["end_date"] = r[3]
+    results["budget"] = r[4]
+    results["radius"] = r[5]
+    results["index"] = r[7]
+    results["route_id"] = r[0]
+    
+    
+    #get keywords for route
+    sql= conn.cursor()
+    sql.execute("SELECT keyword FROM Keywords WHERE route_id = '%d';" %(results["route_id"]))
+    r = sql.fetchall()
+    for keyword in r:
+         results["keywords"].append(keyword)
+
+
+    #place: 
+    # long, lat, 
+    # name, 
+    # place id, stop id,  
+    # stopDate, 
+    # orig_latitude, orig_longitude
+
+    #get details and reviews later?
+
+    
+    #get all information from stops, place in "places" dictionary in order
+    sql= conn.cursor()
+    sql.execute("SELECT * FROM Stops WHERE phone_id = '%d' ORDER BY stop_id ASC;", (results["route_id"]))
+    r = sql.fetchall()
+
+    sql2 = conn.cursor()
+    sql2.execute("SELECT * FROM Places;")
+    r2 = sql2.fetchall()
+
+    for row1 in r:
+        tempDict = {}
+        stop_id = row1[2]
+        place_id = row1[1]
+        for row2 in r2:
+            if row2[0] == place_id:
+                tempDict = {
+                    "place_id" : place_id,
+                    "name" : row2[1],
+                    "stop_date" : row1[3],
+                    "orig_latitude" : row1[4],
+                    "orig_longitude" : row1[5],
+                    "latitude" : row2[2],
+                    "longitude" : row2[3]
+                }
+            break
+        results["places"][stop_id] = tempDict
+    return results
 
 
 @app.route('/nearby', methods=['GET'])

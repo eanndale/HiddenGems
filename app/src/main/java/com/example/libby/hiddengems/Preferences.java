@@ -30,6 +30,13 @@ public class Preferences {
         attractionList = new ArrayList<>();
         attractionList.add("Museum");
         attractionList.add("Natural Landmarks");
+        inited = true;
+    }
+    public static void reset() {
+        startLoc = null;
+        endLoc = null;
+        startDate = "";
+        endDate = "";
     }
     public static boolean isInited() {
         return inited;

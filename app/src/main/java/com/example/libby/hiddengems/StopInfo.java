@@ -60,6 +60,6 @@ public class StopInfo {
     }
 
     public String getDesc() {
-        return "";
+        return "[desc goes here]";
     }
 }
