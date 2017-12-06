@@ -5,7 +5,7 @@ import json
 import math
 import requests
 import pyowm
-from urllib.request import urlopen
+#from urllib.request import urlopen
 from datetime import datetime
 import datetime
 #!/usr/bin/env python
@@ -411,20 +411,21 @@ def save():
     keywords = input["keywords"]
     stops = input["places"]
 
-    # sql = conn.cursor()
-    # sql.execute("INSERT INTO Users (phone_id) VALUES (%s);", (phone_id))
+    sql = conn.cursor()
+    sql.execute("INSERT IGNORE INTO Users (phone_id) VALUES (%s);", (phone_id))
     
-    # sql = conn.cursor()
-    # sql.execute( "INSERT INTO Routes (phone_id, start_date, end_date, budget, radius) VALUES (%s, %s, %s, %s, %s);", (phone_id, start_date, end_date, budget, radius)) 
+    sql = conn.cursor()
+    sql.execute( "INSERT IGNORE INTO Routes (phone_id, start_date, end_date, budget, radius) VALUES (%s, %s, %s, %s, %s);", (phone_id, start_date, end_date, budget, radius)) 
     
    
     sql = conn.cursor()
     sql.execute("SELECT route_id FROM Routes WHERE phone_id = '%s'" %(phone_id))
-    route_id = sql.fetchall()
+    route_id = sql.fetchall()[0]
 
-    # for keyword in keywords:
-    #     sql = conn.cursor()
-    #     sql.execute("INSERT INTO Keywords(route_id, keyword) VALUES (%s, %s);", (route_id, keyword))
+
+    for keyword in keywords:
+        sql = conn.cursor()
+        sql.execute("INSERT IGNORE INTO Keywords(route_id, keyword) VALUES (%s, %s);", (route_id, keyword))
 
     for i in range(len(stops)):
         orig_lat = float(stops[i]['orig_lat'])
@@ -438,11 +439,12 @@ def save():
         name = stops[i]['name']
         rating = stops[i]['rating']
         sql2 = conn.cursor()
-        sql2.execute("INSERT INTO Places(place_id, name, latitude, longitude) VALUES (%s, %s, %s, %s);", (place_id, name, lat, lng))
+        sql2.execute("INSERT IGNORE INTO Places(place_id, name, latitude, longitude) VALUES (%s, %s, %s, %s);", (place_id, name, lat, lng))
         sql = conn.cursor()
         # sql.execute("INSERT INTO Stops(route_id, place_id, stop_id, stop_date, orig_latitude, orig_longitude) VALUES (?,?,?,?,?,?);", (route_id, place_id, i, stop_date, orig_lat, orig_long))
-        sql.execute("INSERT INTO Stops(route_id, place_id, stop_id, orig_latitude, orig_longitude) VALUES (%s, %s, %s, %s, %s);", (route_id, place_id, stop_id, orig_lat, orig_long))
-        
+        # sql.execute("INSERT INTO Stops(route_id, place_id, stop_id, orig_latitude, orig_longitude) VALUES (%s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE place_id '" + place_id + "' or;", (route_id, place_id, stop_id, orig_lat, orig_long))
+        sql.execute("REPLACE INTO Stops(route_id, place_id, stop_id, orig_latitude, orig_longitude) VALUES (%s, %s, %s, %s, %s);", (route_id, place_id, stop_id, orig_lat, orig_long))
+
     done = {
         'done': 'true'
     }
