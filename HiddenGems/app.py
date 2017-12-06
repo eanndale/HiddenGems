@@ -5,7 +5,7 @@ import json
 import math
 import requests
 # import pyowm
-from urllib.request import urlopen
+#from urllib.request import urlopen
 import datetime
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
@@ -207,7 +207,7 @@ def route():
 
     # Calculate number of stops (provided no dates)
     else:
-        stops = int(d / 240000) - 1
+        stops = max(int(d / 240000) - 1, 1)
 
     # Generate midpoints
 
