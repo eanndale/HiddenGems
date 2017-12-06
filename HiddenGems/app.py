@@ -4,7 +4,7 @@ import googlemaps
 import json
 import math
 import requests
-# import pyowm
+import pyowm
 from urllib.request import urlopen
 from datetime import datetime
 
@@ -16,7 +16,8 @@ app.debug = True
 def index():
     return {'hello': 'world'}
 
-
+#returns 5 day every 3 hour forecast at coordinates
+@app.route('/forecast')
 def forecast(lat_, lon_):
     key = "5a61d0979d0298f923b45e24d5cfd6ee"
 
@@ -31,7 +32,7 @@ def forecast(lat_, lon_):
     return json_object
     
     
-
+#return weather_object using pyowm library
 def get_weather_object(lat_, lon_):
     #https://github.com/csparpa/pyowm
     #parameters = {"lat": , "lon": }
@@ -45,26 +46,24 @@ def get_weather_object(lat_, lon_):
     #obs = owm.daily_forecast('London,uk', limit = 5)
     weather = obs.get_weather()
     
-    #print(weather.get_temperature('fahrenheit'))
-    
-    # Get weather short status
-    #print(weather.get_status())
-    
-    # Get detailed weather status
-    #print(weather.get_detailed_status())
-    
     return weather
 
+#return the temperature in fahrenheit
+@app.route('/temperature')
 def get_temperature(lat_, lon_):
     weather_object = get_weather_object(lat_,lon_)
     
     return weather_object.get_temperature('fahrenheit');
 
+#return the weather description: eg couldy, rainy 
+@app.route('/status')
 def get_status(lat_,lon_):
     weather_object = get_weather_object(lat_,lon_)
     
     return weather_object.get_status();
 
+#return a detailed weather description: eg broken clouds
+@app.route('/detailed_status')
 def get_detailed_status(lat_,lon_):
     weather_object = get_weather_object(lat_,lon_)
     
@@ -487,7 +486,7 @@ def load():
     
     #get all information from stops, place in "places" dictionary in order
     sql= conn.cursor()
-    sql.execute("SELECT * FROM Stops WHERE phone_id = '%d'" %(results["route_id"]) "ORDER BY stop_id ASC;")
+    sql.execute("SELECT * FROM Stops WHERE phone_id = '%d' ORDER BY stop_id ASC;"%(results["route_id"]))
     r = sql.fetchall()
 
     sql2 = conn.cursor()
