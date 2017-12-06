@@ -444,7 +444,7 @@ def save():
         sql.execute("INSERT INTO Stops(route_id, place_id, stop_id, orig_latitude, orig_longitude) VALUES (%s, %s, %s, %s, %s);", (route_id, place_id, stop_id, orig_lat, orig_long))
         
     done = {
-        'done': true
+        'done': 'true'
     }
        
     return done 
