@@ -4,10 +4,11 @@ import googlemaps
 import json
 import math
 import requests
-# import pyowm
-from urllib.request import urlopen
+import pyowm
+#from urllib.request import urlopen
 from datetime import datetime
-
+import datetime
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 app = Chalice(app_name='HiddenGems')
@@ -18,7 +19,8 @@ app.debug = True
 def index():
     return {'hello': 'world'}
 
-
+#returns 5 day every 3 hour forecast at coordinates
+@app.route('/forecast')
 def forecast(lat_, lon_):
     key = "5a61d0979d0298f923b45e24d5cfd6ee"
 
@@ -33,7 +35,7 @@ def forecast(lat_, lon_):
     return json_object
     
     
-
+#return weather_object using pyowm library
 def get_weather_object(lat_, lon_):
     #https://github.com/csparpa/pyowm
     #parameters = {"lat": , "lon": }
@@ -47,26 +49,24 @@ def get_weather_object(lat_, lon_):
     #obs = owm.daily_forecast('London,uk', limit = 5)
     weather = obs.get_weather()
     
-    #print(weather.get_temperature('fahrenheit'))
-    
-    # Get weather short status
-    #print(weather.get_status())
-    
-    # Get detailed weather status
-    #print(weather.get_detailed_status())
-    
     return weather
 
+#return the temperature in fahrenheit
+@app.route('/temperature')
 def get_temperature(lat_, lon_):
     weather_object = get_weather_object(lat_,lon_)
     
     return weather_object.get_temperature('fahrenheit');
 
+#return the weather description: eg couldy, rainy 
+@app.route('/status')
 def get_status(lat_,lon_):
     weather_object = get_weather_object(lat_,lon_)
     
     return weather_object.get_status();
 
+#return a detailed weather description: eg broken clouds
+@app.route('/detailed_status')
 def get_detailed_status(lat_,lon_):
     weather_object = get_weather_object(lat_,lon_)
     
@@ -131,7 +131,7 @@ def calculate_initial_compass_bearing(pointA, pointB):
     initial_bearing = math.atan2(x, y)
 
     # Now we have the initial bearing but math.atan2 return values
-    # from -180° to + 180° which is not what we want for a compass bearing
+    # from -180 to + 180 which is not what we want for a compass bearing
     # The solution is to normalize the initial bearing as shown below
     initial_bearing = math.degrees(initial_bearing)
     compass_bearing = (initial_bearing + 360) % 360
@@ -207,7 +207,7 @@ def route():
 
     # Calculate number of stops (provided no dates)
     else:
-        stops = int(d / 240000) - 1
+        stops = max(int(d / 240000) - 1, 1)
 
     # Generate midpoints
 
@@ -389,7 +389,7 @@ def save():
     rds_host = 'hiddengemsdb.cp1ydngf7sx0.us-east-1.rds.amazonaws.com'
     name = 'HiddenGems'
     password = 'Stargazing1'
-    db_name = 'hiddengemsdb'
+    db_name = 'HiddenGems'
 
     conn = pymysql.connect( host=rds_host, user=name, passwd=password, db=db_name, autocommit=True, connect_timeout=15)
 
@@ -399,10 +399,10 @@ def save():
     input = request.json_body
 
     phone_id = input["phone_id"] # maybe typecast to int
-    start_place_id = float(input["start_place_id"])
+    start_place_id = input["start_place_id"]
     # start_long = float(input["start_long"])
     start_date = input["start_date"]
-    end_place_id = float(input["end_place_id"])
+    end_place_id = input["end_place_id"]
     # end_long = float(input["end_long"])
     end_date = input["end_date"]
 
@@ -412,30 +412,44 @@ def save():
     stops = input["places"]
 
     sql = conn.cursor()
-    sql.execute( "INSERT INTO Routes (phone_id, start_date, end_date, budget, radius) VALUES (?, ?, ?, ?, ?);", (phone_id, start_date, end_date, budget, radius, ind)) 
+    sql.execute("INSERT IGNORE INTO Users (phone_id) VALUES (%s);", (phone_id))
     
-    for keyword in keywords:
-        sql = conn.cursor()
-        sql.execute("INSERT INTO Keywords(route_id, keyword) VALUES (?, ?);", (route_id, keyword))
+    sql = conn.cursor()
+    sql.execute( "INSERT IGNORE INTO Routes (phone_id, start_date, end_date, budget, radius) VALUES (%s, %s, %s, %s, %s);", (phone_id, start_date, end_date, budget, radius)) 
+    
    
     sql = conn.cursor()
     sql.execute("SELECT route_id FROM Routes WHERE phone_id = '%s'" %(phone_id))
-    route_id = sql.fetchall()
+    route_id = sql.fetchall()[0]
+
+
+    for keyword in keywords:
+        sql = conn.cursor()
+        sql.execute("INSERT IGNORE INTO Keywords(route_id, keyword) VALUES (%s, %s);", (route_id, keyword))
+
     for i in range(len(stops)):
         orig_lat = float(stops[i]['orig_lat'])
         orig_long = float(stops[i]['orig_long'])
-        lat = float(stops[i]['lattitude'])
+        lat = float(stops[i]['latitude'])
         lng = float(stops[i]['longitude'])
+        stop_id = float(i)
         # index = stops[i]["index"]
-        place_id = stops[i]['place_id']
+        place_id = stops[i]['placeid']
         # stop_date = stops[i]['stop_date'] ????
         name = stops[i]['name']
         rating = stops[i]['rating']
-        sql = conn.cursor()
-        sql.execute("INSERT INTO Stops(route_id, place_id, stop_id, stop_date, orig_latitude, orig_longitude) VALUES (?,?,?,?,?,?);", (route_id, place_id, i, stop_date, orig_lat, orig_long))
         sql2 = conn.cursor()
-        sql2.execute("INSERT INTO Places(place_id, name, latitude, longitude) VALUES (?, ?, ?, ?);", place_id, name, lat, lng)
-    return "done" 
+        sql2.execute("INSERT IGNORE INTO Places(place_id, name, latitude, longitude) VALUES (%s, %s, %s, %s);", (place_id, name, lat, lng))
+        sql = conn.cursor()
+        # sql.execute("INSERT INTO Stops(route_id, place_id, stop_id, stop_date, orig_latitude, orig_longitude) VALUES (?,?,?,?,?,?);", (route_id, place_id, i, stop_date, orig_lat, orig_long))
+        # sql.execute("INSERT INTO Stops(route_id, place_id, stop_id, orig_latitude, orig_longitude) VALUES (%s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE place_id '" + place_id + "' or;", (route_id, place_id, stop_id, orig_lat, orig_long))
+        sql.execute("REPLACE INTO Stops(route_id, place_id, stop_id, orig_latitude, orig_longitude) VALUES (%s, %s, %s, %s, %s);", (route_id, place_id, stop_id, orig_lat, orig_long))
+
+    done = {
+        'done': 'true'
+    }
+       
+    return done 
 
 
 # Loads route
@@ -498,7 +512,8 @@ def load():
     
     #get all information from stops, place in "places" dictionary in order
     sql= conn.cursor()
-    sql.execute("SELECT * FROM Stops WHERE phone_id = '%d'" %(results["route_id"]) "ORDER BY stop_id ASC;")
+
+    sql.execute("SELECT * FROM Stops WHERE phone_id = '%d' ORDER BY stop_id ASC;", (results["route_id"]))
     r = sql.fetchall()
 
     sql2 = conn.cursor()
