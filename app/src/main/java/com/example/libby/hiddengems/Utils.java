@@ -12,7 +12,10 @@ import android.widget.LinearLayout;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
+
 import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicResponseHandler;
@@ -21,6 +24,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -43,7 +47,7 @@ public class Utils {
         arra = new ArrayList<>();
     }
 
-    public static JSONObject makeRequest(String path, JSONObject params) throws Exception
+    public static JSONObject makeRequest(String path, String params) throws Exception
     {
         //instantiates httpclient to make request
         DefaultHttpClient httpclient = new DefaultHttpClient();
@@ -52,7 +56,7 @@ public class Utils {
         HttpPost httpost = new HttpPost(path);
 
         //passes the results to a string builder/entity
-        StringEntity se = new StringEntity(params.toString());
+        StringEntity se = new StringEntity(params);
 
         //sets the post request as the resulting string
         httpost.setEntity(se);
@@ -63,12 +67,96 @@ public class Utils {
 
         //Handles what is returned from the page
         ResponseHandler responseHandler = new BasicResponseHandler();
-        Log.i("Params", params.toString());
+        Log.i("Params", params);
 
         String str = (String) httpclient.execute(httpost, responseHandler);
         if(str != null)
             return new JSONObject(str);
         return null;
+    }
+
+    public static JSONObject getRequest(String path, String params) throws Exception
+    {
+        //instantiates httpclient to make request
+        DefaultHttpClient httpclient = new DefaultHttpClient();
+
+        //url with the getURL data
+        HttpGet httpost = new HttpGet(path + params);
+
+//        //passes the results to a string builder/entity
+//        StringEntity se = new StringEntity(params);
+//
+//        //sets the post request as the resulting string
+//        httpost.setEntity(se);
+        //sets a request header so the page receving the request
+        //will know what to do with it
+        httpost.setHeader("Accept", "application/json");
+        httpost.setHeader("Content-type", "application/json");
+
+        //Handles what is returned from the page
+        ResponseHandler responseHandler = new BasicResponseHandler();
+        Log.i("Params", params);
+
+        String str = (String) httpclient.execute(httpost, responseHandler);
+        if(str != null)
+            return new JSONObject(str);
+        return null;
+    }
+
+    public static String jsonToUrl(JSONObject json) {
+        StringBuilder ret = new StringBuilder("");
+        try {
+            for (Iterator<String> s = json.keys(); s.hasNext(); ) {
+                String key = s.next();
+                String ans = "/" + key + "/" + json.getString(key);
+                ret.append(ans);
+//                ret += "/" + json.getString(key);
+            }
+        }
+        catch (Exception e) {
+            Log.e("JsonToURL", e.getStackTrace().toString());
+        }
+        return ret.toString();
+    }
+
+    public static class sendSave extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String[] maps) {
+            try {
+                JSONObject rsp = Utils.makeRequest("https://105yog30qc.execute-api.us-east-1.amazonaws.com/api/route/save", maps[0]);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+    }
+
+    public static class sendLoad extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String[] maps) {
+            try {
+                JSONObject rsp = Utils.makeRequest( "https://105yog30qc.execute-api.us-east-1.amazonaws.com/api/route/load", maps[0]);
+            } catch (Exception e) {
+                Log.e("load", e.getStackTrace().toString());
+            }
+            return null;
+        }
+    }
+
+
+    public static class sendNearby extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String[] maps) {
+            try {
+                JSONObject rsp = Utils.makeRequest( "https://105yog30qc.execute-api.us-east-1.amazonaws.com/api/route/load", maps[0]);
+            } catch (Exception e) {
+                Log.e("nearby", e.getStackTrace().toString());
+            }
+            return null;
+        }
     }
 
     public static class sendUpdate extends AsyncTask<StopInfo, Void, String> {
@@ -84,9 +172,9 @@ public class Utils {
                         .put("orig_lat", maps[0].getOrig_lat())
                         .put("orig_long", maps[0].getOrig_long())
                         .put("index", maps[0].getIndex());
-                JSONObject rsp = Utils.makeRequest("https://105yog30qc.execute-api.us-east-1.amazonaws.com/api/update", j);
+                JSONObject rsp = Utils.makeRequest("https://105yog30qc.execute-api.us-east-1.amazonaws.com/api/update", j.toString());
                 Log.e("SECOND", rsp.getString("place_id"));
-                arra.add(rsp.getInt("index"),
+                arra.add(maps[0].getIndex(),
                         new StopInfo(
                         rsp.getString("name"),
                         rsp.getString("place_id"),
@@ -95,7 +183,7 @@ public class Utils {
                         rsp.getDouble("longitude"),
                         rsp.getDouble("orig_lat"),
                         rsp.getDouble("orig_long"),
-                        rsp.getInt("index")
+                        maps[0].getIndex()
 //                                ,
 //                        rsp.getString("forecast")
                         ));
@@ -120,7 +208,7 @@ public class Utils {
         protected String doInBackground(JSONObject[] maps) {
             sending = true;
             try {
-                JSONObject rsp = Utils.makeRequest("https://105yog30qc.execute-api.us-east-1.amazonaws.com/api/route", maps[0]);
+                JSONObject rsp = Utils.makeRequest("https://105yog30qc.execute-api.us-east-1.amazonaws.com/api/route", maps[0].toString());
                 if (rsp != null) {
                     Log.e("json", rsp.get("places").toString());
                     JSONArray ja = rsp.getJSONArray("places");

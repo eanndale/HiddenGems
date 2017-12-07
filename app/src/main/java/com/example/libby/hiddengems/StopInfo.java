@@ -63,6 +63,8 @@ public class StopInfo {
         return index;
     }
 
+    public void setIndex(int i) {this.index = i;}
+
     public String getDesc() {
         return "[desc goes here]";
     }
