@@ -453,23 +453,28 @@ def save():
 
 
 # Loads route
-@app.route('/route/load', methods=['GET'])
-def load():
+@app.route('/route/load/{phone_id}/{route_id}', methods=['GET'])
+def load(phone_id, route_id):
+
+    rds_host = 'hiddengemsdb.cp1ydngf7sx0.us-east-1.rds.amazonaws.com'
+    name = 'HiddenGems'
+    password = 'Stargazing1'
+    db_name = 'HiddenGems'
     # gmaps = googlemaps.Client(key='AIzaSyDTo1GrHUKKmtBiVw4xBQxD1Uv24R1ypvY')
     gmaps = googlemaps.Client(key='AIzaSyD_O6TM3vX-EbHpsSwVu-DPsfCxRar7xJo')
     #
     conn = pymysql.connect( host=rds_host, user=name, passwd=password, db=db_name, autocommit=True, connect_timeout=15)
     
-    request = app.current_request
-    input = request.json_body
+    # request = app.current_request
+    # input = request.json_body
     
-    phone_id = input['phone_id']
+    # phone_id = input['phone_id']
     
     #start and end location, start and end dates, stops, preferences, long/lat, place ID, place name, description
 
 
     results = {
-        "route_id" : -1,
+        "route_id" : route_id,
         "places": {},
         "keywords": [],
         "budget": -1,
@@ -480,10 +485,23 @@ def load():
         "isDriving": 'false'
     }
     
-    #get basics from Route table
+    #get basics from Route table FOR ONE ROUTE PER PHONEID
+    # sql = conn.cursor()
+    # sql.execute("SELECT * FROM Routes WHERE phone_id = (%s);", (phone_id))
+    # r = sql.fetchall()
+    # return r;
+    # results["start_date"] = r[2]
+    # results["end_date"] = r[3]
+    # results["budget"] = r[4]
+    # results["radius"] = r[5]
+    # results["index"] = r[7]
+    # results["route_id"] = r[0]
+    
+    #get basics from Route table FOR MORE THAN ONE ROUTE PER PHONEID
     sql = conn.cursor()
-    sql.execute("SELECT * FROM Routes WHERE phone_id = '%s';" %(phone_id))
-    r = sql.fetchall()
+    sql.execute("SELECT * FROM Routes WHERE phone_id = (%s) AND route_id = (%s);", (phone_id, route_id))
+    r = sql.fetchall()[0]
+
     results["start_date"] = r[2]
     results["end_date"] = r[3]
     results["budget"] = r[4]
@@ -491,29 +509,26 @@ def load():
     results["index"] = r[7]
     results["route_id"] = r[0]
     
-    
-    #get keywords for route
+    # #get keywords for route
     sql= conn.cursor()
-    sql.execute("SELECT keyword FROM Keywords WHERE route_id = '%d';" %(results["route_id"]))
+    sql.execute("SELECT keyword FROM Keywords WHERE route_id = (%s);" (route_id))
     r = sql.fetchall()
     for keyword in r:
          results["keywords"].append(keyword)
 
+    # #place: 
+    # # long, lat, 
+    # # name, 
+    # # place id, stop id,  
+    # # stopDate, 
+    # # orig_latitude, orig_longitude
 
-    #place: 
-    # long, lat, 
-    # name, 
-    # place id, stop id,  
-    # stopDate, 
-    # orig_latitude, orig_longitude
-
-    #get details and reviews later?
+    # #get details and reviews later?
 
     
     #get all information from stops, place in "places" dictionary in order
     sql= conn.cursor()
-
-    sql.execute("SELECT * FROM Stops WHERE phone_id = '%d' ORDER BY stop_id ASC;", (results["route_id"]))
+    sql.execute("SELECT * FROM Stops WHERE phone_id = (%s) ORDER BY stop_id ASC;", (route_id))
     r = sql.fetchall()
 
     sql2 = conn.cursor()
