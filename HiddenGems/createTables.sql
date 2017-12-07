@@ -44,7 +44,7 @@ FOREIGN KEY (place_id) REFERENCES Places(place_id) ON DELETE CASCADE
 
 CREATE TABLE Details (
 place_id VARCHAR(100),
-description VARCHAR(300),
+description VARCHAR(500),
 rating INT,
 PRIMARY KEY(place_id),
 FOREIGN KEY (place_id) REFERENCES Places(place_id) ON DELETE CASCADE
@@ -53,7 +53,7 @@ FOREIGN KEY (place_id) REFERENCES Places(place_id) ON DELETE CASCADE
 CREATE TABLE Reviews (
 phone_id VARCHAR(100) NOT NULL,
 place_id VARCHAR(100) NOT NULL,
-body VARCHAR(280) NOT NULL,
+body VARCHAR(500) NOT NULL,
 PRIMARY KEY(phone_id, place_id),
 FOREIGN KEY (place_id) REFERENCES Places(place_id) ON DELETE CASCADE
 );

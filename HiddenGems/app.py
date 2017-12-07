@@ -608,8 +608,8 @@ def describe():
 
     gmaps = googlemaps.Client(key='AIzaSyD_O6TM3vX-EbHpsSwVu-DPsfCxRar7xJo')
 
-    request = app.current_request
-    input = request.json_body
+    # request = app.current_request
+    # input = request.json_body
 
     results = {
         "name": '',
@@ -619,8 +619,11 @@ def describe():
         "reviews": []
     }
 
-    place_id = 'ChIJd8BlQ2BZwokRAFUEcm_qrcA'
-    desc = gmaps.place(place_id = input['place_id'])
+    # place_id = 'ChIJd8BlQ2BZwokRAFUEcm_qrcA'
+    # desc = gmaps.place(place_id = input['place_id'])
+    place_id = 'ChIJ0UINjLxSk4cR_Bm9JfqOf7M'
+    desc = gmaps.place(place_id = place_id)
+    return desc
 
     results['name'] = desc['result']['name']
     results['address'] = desc['result']['formatted_address']
