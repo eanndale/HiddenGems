@@ -183,7 +183,7 @@ public class Utils {
                         rsp.getDouble("longitude"),
                         rsp.getDouble("orig_lat"),
                         rsp.getDouble("orig_long"),
-                        maps[0].getIndex()));
+                        maps[0].getIndex()
 //                                ,
 //                        rsp.getString("forecast")
                         ));
