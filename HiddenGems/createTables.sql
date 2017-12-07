@@ -7,8 +7,17 @@ PRIMARY KEY(place_id)
 );
 
 CREATE TABLE Users (
-phone_id VARCHAR(100 ) NOT NULL,
+phone_id VARCHAR(100) NOT NULL,
 PRIMARY KEY(phone_id)
+);
+
+CREATE TABLE UserPlaces(
+phone_id VARCHAR(100) NOT NULL,
+place_id VARCHAR(100) NOT NULL,
+name VARCHAR(100) NOT NULL,
+PRIMARY KEY(phone_id, place_id),
+FOREIGN KEY(phone_id) REFERENCES Users(phone_id) ON DELETE CASCADE,
+FOREIGN KEY(place_id) REFERENCES Places(place_id) ON DELETE CASCADE
 );
 
 CREATE TABLE Routes (
