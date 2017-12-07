@@ -518,7 +518,7 @@ def load(phone_id, route_id):
     
     # #get keywords for route
     sql= conn.cursor()
-    sql.execute("SELECT keyword FROM Keywords WHERE route_id = (%s);" (route_id))
+    sql.execute("SELECT keyword FROM Keywords WHERE route_id = (%s);", (route_id))
     r = sql.fetchall()
     for keyword in r:
          results["keywords"].append(keyword)
@@ -535,12 +535,13 @@ def load(phone_id, route_id):
     
     #get all information from stops, place in "places" dictionary in order
     sql= conn.cursor()
-    sql.execute("SELECT * FROM Stops WHERE phone_id = (%s) ORDER BY stop_id ASC;", (route_id))
+    sql.execute("SELECT * FROM Stops WHERE route_id = (%s) ORDER BY stop_id ASC;", (route_id))
     r = sql.fetchall()
 
     sql2 = conn.cursor()
     sql2.execute("SELECT * FROM Places;")
     r2 = sql2.fetchall()
+
 
     for row1 in r:
         tempDict = {}
@@ -551,13 +552,13 @@ def load(phone_id, route_id):
                 tempDict = {
                     "place_id" : place_id,
                     "name" : row2[1],
-                    "stop_date" : row1[3],
-                    "orig_latitude" : row1[4],
-                    "orig_longitude" : row1[5],
+                    # "stop_date" : row1[3],
+                    "orig_latitude" : row1[3],
+                    "orig_longitude" : row1[4],
                     "latitude" : row2[2],
                     "longitude" : row2[3]
                 }
-            break
+                break
         results["places"][stop_id] = tempDict
     return results
 
