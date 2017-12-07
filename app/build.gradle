@@ -34,4 +34,5 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
 
     compile 'com.akexorcist:googledirectionlibrary:1.0.5'
+    compile 'com.google.android.gms:play-services-location:11.4.2'
 }
