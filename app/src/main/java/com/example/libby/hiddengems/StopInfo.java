@@ -17,9 +17,12 @@ public class StopInfo {
     private double orig_lat;
     private double orig_long;
     private int index;
+    private String forecast;
 
     public StopInfo() {}
-    public StopInfo(String n, String id, double rating, double lat, double lng, double o_lat, double o_lng, int i) {
+    public StopInfo(String n, String id, double rating, double lat, double lng, double o_lat, double o_lng, int i
+//            , String forecast
+    ) {
         this.name = n;
         this.placeid = id;
         this.rating = rating;
@@ -29,6 +32,7 @@ public class StopInfo {
         this.orig_lat = o_lat;
         this.orig_long = o_lng;
         this.index = i;
+//        this.forecast = forecast;
     }
 
     public LatLng getLoc() {
@@ -62,4 +66,6 @@ public class StopInfo {
     public String getDesc() {
         return "[desc goes here]";
     }
+
+//    public String getForecast() { return forecast; }
 }

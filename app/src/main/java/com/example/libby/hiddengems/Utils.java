@@ -95,7 +95,10 @@ public class Utils {
                         rsp.getDouble("longitude"),
                         rsp.getDouble("orig_lat"),
                         rsp.getDouble("orig_long"),
-                        rsp.getInt("index")));
+                        rsp.getInt("index")
+//                                ,
+//                        rsp.getString("forecast")
+                        ));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -141,7 +144,10 @@ public class Utils {
                                 m.getDouble("longitude"),
                                 m.getDouble("orig_lat"),
                                 m.getDouble("orig_long"),
-                                m.getInt("index")));
+                                m.getInt("index")
+//                                ,
+//                                m.getString("forecast")
+                                ));
                     }
 //                    arra.add(new StopInfo(
 //                            "End",

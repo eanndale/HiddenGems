@@ -245,6 +245,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 if(position != 0 || position != Utils.arra.size()-1) {
                     StopInfo info = Utils.arra.get(position);
+//                    Log.i("forecast", info.getForecast());
                     Utils.showDialog(MapsActivity.this,
                             true, info.getName(),
                             true, info.getRating(),
