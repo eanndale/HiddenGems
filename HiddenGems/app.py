@@ -612,25 +612,21 @@ def describe():
     # input = request.json_body
 
     results = {
-        "name": '',
-        "address": '',
-        "description": '',
-        "rating": '',
-        "reviews": []
+        'reviews': []
     }
 
     # place_id = 'ChIJd8BlQ2BZwokRAFUEcm_qrcA'
     # desc = gmaps.place(place_id = input['place_id'])
     place_id = 'ChIJ0UINjLxSk4cR_Bm9JfqOf7M'
-    desc = gmaps.place(place_id = place_id)
-    return desc
+    descJSON = gmaps.place(place_id = place_id)
+    desc = descJSON['result']
 
-    results['name'] = desc['result']['name']
-    results['address'] = desc['result']['formatted_address']
-    results['rating'] = desc['result']['rating']
+    results['name'] = descJSON['result']['name']
+    results['address'] = descJSON['result']['formatted_address']
+    results['rating'] = descJSON['result']['rating']
 
     # For free users, the API only returns up to 5 reviews
-    if desc['reviews']:
+    if 'reviews' in desc:
         for review in desc['reviews']:
             r = {
                 'author_name': review['author_name'],
@@ -639,6 +635,13 @@ def describe():
                 'body': review['text']
             }
             results['reviews'].append(r)
+
+    if 'price_level' in desc :
+        results['price_level'] = desc['price_level']
+
+    if 'website' in desc:
+        results['website'] = desc['website']
+
 
     return results
 
