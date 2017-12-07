@@ -89,7 +89,7 @@ def getPathLength(lat1,lng1,lat2,lng2):
     d = R * c
     return d
 
-# Returns the lat/long of a destination point given the start lat, long, aziuth, distance
+# Returns the lat/long of a destination point given the start lat, long, azimuth, distance
 def getDestinationLatLong(lat,lng,azimuth,distance):
     R = 6378.1 #Radius of the Earth in km
     brng = math.radians(azimuth) #Bearing is degrees converted to radians.
@@ -150,7 +150,7 @@ def route():
     rds_host = 'hiddengemsdb.cp1ydngf7sx0.us-east-1.rds.amazonaws.com'
     name = 'HiddenGems'
     password = 'Stargazing1'
-    db_name = 'hiddengemsdb'
+    db_name = 'HiddenGems'
 
     conn = pymysql.connect( host=rds_host, user=name, passwd=password, db=db_name, autocommit=True, connect_timeout=15)
     cur = conn.cursor()
@@ -169,6 +169,9 @@ def route():
     budget = float(input["budget"])
     radius = int(input["radius"]) / 0.62137119 * 1000 # this must be in meters
     keywords = ((input["keywords"])[1:-1]).split(', ')
+
+    # Add user to db
+    cur.execute("INSERT IGNORE INTO Users (phone_id) VALUES (%s);", (phone_id))
 
     # Format multiple keywords for API search
     parsed_keywords = ""
@@ -246,9 +249,10 @@ def route():
     }
     results['places'].append(data)
 
-    # sql = "INSERT INTO hiddengemsdb.Places(place_id, name, latitude, longitude) VALUES(%s, %s, %s, %s);"
-    # cur.execute(sql, (start_place_id, start_address, start_lat, start_long))
+    sql = "INSERT IGNORE INTO Places(place_id, name, latitude, longitude) VALUES(%s, %s, %s, %s);"
+    cur.execute(sql, (start_place_id, start_address, start_lat, start_long))
 
+    count = 1
 
     # Get midpoints information
     for i in range(len(coords)):
@@ -263,10 +267,15 @@ def route():
                     'rating': nearest['rating'] if 'rating' in nearest else 0,
                     'orig_lat': coords[i][0],
                     'orig_long': coords[i][1],
-                    'index': 0,
+                    'index': count,
                     'date': (strp_start_date + datetime.timedelta(days=i/2)).strftime("%m%d%Y") if start_date else ''
                     }
+
+            sql = "INSERT IGNORE INTO Places(place_id, name, latitude, longitude) VALUES(%s, %s, %s, %s);"
+            cur.execute(sql, (data['place_id'], data['name'], data['latitude'], data['longitude']))
+
             results['places'].append(data)
+            count += 1
 
     # Insert end point information
     data = {'place_id': end_place_id,
@@ -276,84 +285,82 @@ def route():
             'rating': 0,
             'orig_lat': end_lat,
             'orig_long': end_long,
-            'index': 0,
+            'index': count,
             'date': strp_end_date.strftime("%m%d%Y") if start_date else ''
     }
+
+    sql = "INSERT IGNORE INTO Places(place_id, name, latitude, longitude) VALUES(%s, %s, %s, %s);"
+    cur.execute(sql, (end_place_id, end_address, end_lat, end_long))
+
     results['places'].append(data)
-
-
-    '''
-    Deprecated code from when finding midpoints was really badly done
-    
-    if (stops < 1):
-        mid_lat = (start_lat + end_lat) / 2.0
-        mid_long = (start_long + end_long) / 2.0
-        nearby = gmaps.places_nearby(keyword = 'attraction', location = [mid_lat, mid_long], radius = 30000)
-        nearest = nearby['results'][0]
-        data = {'place_id': nearest['place_id'],
-                'name': nearest['name'],
-                'latitude': nearest['geometry']['location']['lat'],
-                'longitude': nearest['geometry']['location']['lng'],
-                'rating': nearest['rating'] if 'rating' in nearest else 0,
-                'orig_lat': mid_lat,
-                'orig_long': mid_long,
-                'index': 0
-        }
-        results['places'].append(data)
-
-    else:
-        mid_lat = start_lat
-        mid_long = start_long
-        inc_lat = (end_lat - start_lat) / float(stops + 1)
-        inc_long = (end_long - start_long) / float(stops + 1)
-        for i in range(0, stops):
-            mid_lat += inc_lat
-            mid_long += inc_long
-            nearby = gmaps.places_nearby(keyword = 'attraction', location = [mid_lat, mid_long], radius = 30000)
-            if (len(nearby['results']) > 0):
-                nearest = nearby['results'][0]
-                data = {'place_id': nearest['place_id'],
-                        'name': nearest['name'],
-                        'latitude': nearest['geometry']['location']['lat'],
-                        'longitude': nearest['geometry']['location']['lng'],
-                        'rating': nearest['rating'] if 'rating' in nearest else 0,
-                        'orig_lat': mid_lat,
-                        'orig_long': mid_long,
-                        'index': 0
-                        }
-                results['places'].append(data)
-    '''
 
     # cur.close()
     conn.close()
     return results
 
 
-# Updates one particular point in the route with
-@app.route('/update', methods=['POST'])
+# Replaces one particular point in the route with a new location
+@app.route('/replace', methods=['POST'])
 def update():
-    # gmaps = googlemaps.Client(key='AIzaSyDTo1GrHUKKmtBiVw4xBQxD1Uv24R1ypvY')
+    rds_host = 'hiddengemsdb.cp1ydngf7sx0.us-east-1.rds.amazonaws.com'
+    name = 'HiddenGems'
+    password = 'Stargazing1'
+    db_name = 'HiddenGems'
+
+    conn = pymysql.connect( host=rds_host, user=name, passwd=password, db=db_name, autocommit=True, connect_timeout=15)
+    cur = conn.cursor()
+
     gmaps = googlemaps.Client(key='AIzaSyD_O6TM3vX-EbHpsSwVu-DPsfCxRar7xJo')
 
     request = app.current_request
-    place = request.json_body
+    input = request.json_body
+    keywords = ((input["keywords"])[1:-1]).split(', ')
 
-    nearby = gmaps.places_nearby(keyword = 'attraction', location = [place['orig_lat'], place['orig_long']], radius = 50000)
-    # for i in range(0, len(nearby['results'])):
-    # if (nearby['results'][i]['place_id'] != place['place_id']):
+    # Insert rejected place into db
+    sql = "INSERT IGNORE INTO UserPlaces(phone_id, place_id, name) VALUES(%s, %s, %s);"
+    cur.execute(sql, (input['phone_id'], input['place_id'], input[name]))
 
-    nearest = nearby['results'][1] # [int(place['index']) + 1]
-    data = {'place_id': nearest['place_id'],
-            'name': nearest['name'],
-            'latitude': nearest['geometry']['location']['lat'],
-            'longitude': nearest['geometry']['location']['lng'],
-            'rating': nearest['rating'] if 'rating' in nearest else 0,
-            'orig_lat': place['orig_lat'],
-            'orig_long': place['orig_long'],
-            'index': place['index'] + 1
+    # Format multiple keywords for API search
+    parsed_keywords = ""
+    for i in range(len(keywords)):
+        if i == 0:
+            parsed_keywords = "(" + keywords[0] + ")"
+        else:
+            parsed_keywords = parsed_keywords + " OR (" + keywords[i] + ")"
+
+    results = {
+        'places': 0
     }
-    results['places'].append(data)
-    return data
+
+    nearby = gmaps.places_nearby(keyword = parsed_keywords, location = [input['orig_lat'], input['orig_long']], radius = input['radius'])
+    if (len(nearby['results']) > 0) :
+        # for j in range(len(nearby['results'])):
+        for nearest in nearby['results']:
+
+            sql = "SELECT * FROM UserPlaces WHERE phone_id = %s AND name = %s;"
+            cur.execute(sql, (input['phone_id'], input['name']))
+
+            if not cur.rowcount: # If the name found doesn't match any existing in
+                data = {'place_id': nearest['place_id'],
+                        'name': nearest['name'],
+                        'latitude': nearest['geometry']['location']['lat'],
+                        'longitude': nearest['geometry']['location']['lng'],
+                        'rating': nearest['rating'] if 'rating' in nearest else 0,
+                        'orig_lat': input['orig_lat'],
+                        'orig_long': input['orig_long'],
+                        'index': input['index'],
+                        'date': input['date']
+                        }
+
+                # Add new location to db if unique
+                sql = "INSERT IGNORE INTO Places(place_id, name, latitude, longitude) VALUES(%s, %s, %s, %s);"
+                cur.execute(sql, (data['place_id'], data['name'], data['latitude'], data['longitude']))
+
+                results['places'] = data
+                return results
+
+    # If nothing suitable was found return nothing (can be changed)
+    return results
 
 
 # Saves/updates/loads user preferences
@@ -571,20 +578,50 @@ def nearby():
     return results
 
 
+# TODO: If there are enough user reviews perhaps return those instead. Also possibly make Reviews table values similar to Google Maps API return.
 @app.route('/describe', methods=['POST'])
 def describe():
-    # gmaps = googlemaps.Client(key='AIzaSyDTo1GrHUKKmtBiVw4xBQxD1Uv24R1ypvY')
+
+    rds_host = 'hiddengemsdb.cp1ydngf7sx0.us-east-1.rds.amazonaws.com'
+    name = 'HiddenGems'
+    password = 'Stargazing1'
+    db_name = 'HiddenGems'
+
+    conn = pymysql.connect( host=rds_host, user=name, passwd=password, db=db_name, autocommit=True, connect_timeout=15)
+    cur = conn.cursor()
+
     gmaps = googlemaps.Client(key='AIzaSyD_O6TM3vX-EbHpsSwVu-DPsfCxRar7xJo')
 
     request = app.current_request
-    place = request.json_body
-    results = {'hello': 'world'}
+    input = request.json_body
+
+    results = {
+        "name": '',
+        "address": '',
+        "description": '',
+        "rating": '',
+        "reviews": []
+    }
 
     place_id = 'ChIJd8BlQ2BZwokRAFUEcm_qrcA'
-    desc = gmaps.place(place_id = place_id)
+    desc = gmaps.place(place_id = input['place_id'])
 
-    # results.append(desc)
-    return desc['result']['geometry']['location']['lat']
+    results['name'] = desc['result']['name']
+    results['address'] = desc['result']['formatted_address']
+    results['rating'] = desc['result']['rating']
+
+    # For free users, the API only returns up to 5 reviews
+    if desc['reviews']:
+        for review in desc['reviews']:
+            r = {
+                'author_name': review['author_name'],
+                'rating': review['rating'],
+                'time': review['relative_time_description'],
+                'body': review['text']
+            }
+            results['reviews'].append(r)
+
+    return results
 
 
 # @app.route('/fuckyou', methods=['POST'])
