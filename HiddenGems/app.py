@@ -700,9 +700,14 @@ def arrive(phone_id):
     sql = 'UPDATE * FROM Routes SET isDriving = 0 WHERE phone_id = %s;'
     cur.execute(sql, (phone_id))
 
+    sql = 'SELECT ind FROM Routes WHERE phone_id = %s;'
+    cur.execute(sql, (phone_id))
+    result = cur.fetchone;
+    ind = result['ind']
+
     cur.close()
     conn.close()
-    return 0
+    return {'ind': ind}
 
 
 @app.route('/go/{phone_id}', methods=['GET'])
@@ -718,9 +723,14 @@ def go(phone_id):
     sql = 'UPDATE * FROM Routes SET isDriving = 1, ind = ind + 1 WHERE phone_id = %s;'
     cur.execute(sql, (phone_id))
 
+    sql = 'SELECT ind FROM Routes WHERE phone_id = %s;'
+    cur.execute(sql, (phone_id))
+    result = cur.fetchone;
+    ind = result['ind']
+
     cur.close()
     conn.close()
-    return 0
+    return {'ind': ind}
 
 
 
