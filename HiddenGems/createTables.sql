@@ -7,8 +7,17 @@ PRIMARY KEY(place_id)
 );
 
 CREATE TABLE Users (
-phone_id VARCHAR(100 ) NOT NULL,
+phone_id VARCHAR(100) NOT NULL,
 PRIMARY KEY(phone_id)
+);
+
+CREATE TABLE UserPlaces(
+phone_id VARCHAR(100) NOT NULL,
+place_id VARCHAR(100) NOT NULL,
+name VARCHAR(100) NOT NULL,
+PRIMARY KEY(phone_id, place_id),
+FOREIGN KEY(phone_id) REFERENCES Users(phone_id) ON DELETE CASCADE,
+FOREIGN KEY(place_id) REFERENCES Places(place_id) ON DELETE CASCADE
 );
 
 CREATE TABLE Routes (
@@ -44,7 +53,7 @@ FOREIGN KEY (place_id) REFERENCES Places(place_id) ON DELETE CASCADE
 
 CREATE TABLE Details (
 place_id VARCHAR(100),
-description VARCHAR(300),
+description VARCHAR(500),
 rating INT,
 PRIMARY KEY(place_id),
 FOREIGN KEY (place_id) REFERENCES Places(place_id) ON DELETE CASCADE
@@ -53,7 +62,7 @@ FOREIGN KEY (place_id) REFERENCES Places(place_id) ON DELETE CASCADE
 CREATE TABLE Reviews (
 phone_id VARCHAR(100) NOT NULL,
 place_id VARCHAR(100) NOT NULL,
-body VARCHAR(280) NOT NULL,
+body VARCHAR(500) NOT NULL,
 PRIMARY KEY(phone_id, place_id),
 FOREIGN KEY (place_id) REFERENCES Places(place_id) ON DELETE CASCADE
 );

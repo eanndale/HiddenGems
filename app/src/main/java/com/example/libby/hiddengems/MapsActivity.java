@@ -31,11 +31,13 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.lang.reflect.Type;
 
 import static java.lang.Double.max;
 import static java.lang.Double.min;
@@ -83,7 +85,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        budget and radius can just be added to the msg
 
         ArrayList<String> prefs = new ArrayList<>();
-        JSONObject startMsg = new JSONObject();
+        final JSONObject startMsg = new JSONObject();
         try {
             startMsg.put("phone_id", Preferences.getAndroidId());
 
@@ -157,6 +159,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onClick(View v) {
                 Intent intent = new Intent(getApplicationContext(), DriveActivity.class);
                 startActivity(intent);
+            }
+        });
+
+        Button a = findViewById(R.id.maps_save);
+        a.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+//                    save.put("phone_id", Preferences.getAndroidId());
+//                    save.put()
+                    SaveInfo save = new SaveInfo();
+                    Gson gson = new Gson();
+                    Type type = new TypeToken<SaveInfo>() {}.getType();
+                    String jj = gson.toJson(save, type);
+
+                    new Utils.sendSave().execute(jj);
+                    Log.i("gson", jj);
+//                    Log.i("json", save.toString());
+                }
+                catch (Exception e) {
+                    Log.e("json", e.getMessage());
+                }
             }
         });
 

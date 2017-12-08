@@ -1,13 +1,17 @@
 package com.example.libby.hiddengems;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Rect;
 import android.os.Parcelable;
 import android.provider.Settings;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -30,6 +34,7 @@ import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -85,36 +90,6 @@ public class MainActivity extends AppCompatActivity {
         if (!Preferences.getStartDate().equals("")) {
             startDate.setText(Preferences.getStartDate());
         }
-//        startDate.addTextChangedListener(new TextWatcher() {
-//            @Override
-//            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-//
-//            }
-//
-//            @Override
-//            public void onTextChanged(CharSequence s, int start, int before, int count) {
-//                try {
-//                    int day = Integer.decode(s.toString().substring(0, 2));
-//                    int month = Integer.decode(s.toString().substring(2, 4));
-//                    int year = Integer.decode(s.toString().substring(4));
-//                    if (day > 0 && day < 32 &&
-//                            month > 0 && month <= 12 &&
-//                            year > 1900 && year < 2100) {
-//                        Preferences.setStartDate(s.toString());
-//                    }
-//                    else {
-//                        startDate.setText("Not Valid: Please format like DDMMYYYY");
-//                    }
-//                }
-//                catch(Exception e) {
-//                    startDate.setText("Not Valid: Please format like DDMMYYYY");
-//                }
-//            }
-//
-//            @Override
-//            public void afterTextChanged(Editable s) {
-//            }
-//        });
 
         PlaceAutocompleteFragment endFragment = (PlaceAutocompleteFragment)
                 getFragmentManager().findFragmentById(R.id.end_autocomplete_fragment);
@@ -145,38 +120,6 @@ public class MainActivity extends AppCompatActivity {
         if (!Preferences.getEndDate().equals("")) {
             endDate.setText(Preferences.getEndDate());
         }
-//        endDate.addTextChangedListener(new TextWatcher() {
-//            @Override
-//            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-//
-//            }
-//
-//            @Override
-//            public void onTextChanged(CharSequence s, int start, int before, int count) {
-//
-//            }
-//
-//            @Override
-//            public void afterTextChanged(Editable s) {
-//                try {
-//                    int day = Integer.decode(s.toString().substring(0, 2));
-//                    int month = Integer.decode(s.toString().substring(2, 4));
-//                    int year = Integer.decode(s.toString().substring(4));
-//                    if (day > 0 && day < 32 &&
-//                            month > 0 && month <= 12 &&
-//                            year > 1900 && year < 2100) {
-//                        Preferences.setStartDate(s.toString());
-//                    }
-//                    else {
-//                        endDate.setText("Not Valid: Please format like DDMMYYYY");
-//                    }
-//                }
-//                catch(Exception e) {
-//                    endDate.setText("Not Valid: Please format like DDMMYYYY");
-//                }
-//
-//            }
-//        });
 
         btn = (Button) findViewById(R.id.start_main);
         btn.setOnClickListener(new View.OnClickListener() {
@@ -244,6 +187,28 @@ public class MainActivity extends AppCompatActivity {
         int day = Integer.decode(s.substring(2,4));
         int year = Integer.decode(s.substring(4));
         return (month > 0 && month < 13) && (day > 0 && day < 32) && (year > 1900 && year < 2100);
+    }
+
+    private boolean checkPermissions() {
+        //NOTE ADD PERMISSIONS if necessary
+        ArrayList<String> permissions = new ArrayList<>();
+        permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
+        permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
+        permissions.add(Manifest.permission.ACCESS_NETWORK_STATE);
+        permissions.add(Manifest.permission.INTERNET);
+
+        ArrayList<String> reqs = new ArrayList<>();
+        for (int i = 0; i < permissions.size(); i++) {
+            int res = ContextCompat.checkSelfPermission(MainActivity.this, permissions.get(i));
+            if (res != PackageManager.PERMISSION_GRANTED) {
+                reqs.add(permissions.get(i));
+            }
+        }
+        if (!reqs.isEmpty()) {
+            ActivityCompat.requestPermissions(this, reqs.toArray(new String[reqs.size()]), 1);
+            return false;
+        }
+        return true;
     }
 
     @Override
