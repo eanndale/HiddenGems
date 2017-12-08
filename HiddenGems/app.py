@@ -304,7 +304,7 @@ def route():
 
     results['places'].append(data)
 
-    # cur.close()
+    cur.close()
     conn.close()
     return results
 
@@ -367,9 +367,14 @@ def update():
                 cur.execute(sql, (data['place_id'], data['name'], data['latitude'], data['longitude']))
 
                 results['places'] = data
+
+                cur.close()
+                conn.close()
                 return results
 
     # If nothing suitable was found return nothing (can be changed)
+    cur.close()
+    conn.close()
     return results
 
 
@@ -465,7 +470,10 @@ def save():
     done = {
         'done': 'true'
     }
-       
+
+    sql.close()
+    conn.close()
+
     return done 
 
 
@@ -570,6 +578,9 @@ def load(phone_id, route_id):
                 }
                 break
         results["places"][stop_id] = tempDict
+
+    sql.close()
+    conn.close()
     return results
 
 
@@ -669,12 +680,15 @@ def describe():
     if 'website' in desc:
         results['website'] = desc['website']
 
+
+    cur.close()
+    conn.close()
     return results
 
 
 # Dynamic routes
 @app.route('/arrive/{phone_id}', methods=['GET'])
-def arrive():
+def arrive(phone_id):
     rds_host = 'hiddengemsdb.cp1ydngf7sx0.us-east-1.rds.amazonaws.com'
     name = 'HiddenGems'
     password = 'Stargazing1'
@@ -683,12 +697,16 @@ def arrive():
     conn = pymysql.connect( host=rds_host, user=name, passwd=password, db=db_name, autocommit=True, connect_timeout=15)
     cur = conn.cursor()
 
-    sql = 'UPDATE * FROM Routes WHERE phone_id = %s '
+    sql = 'UPDATE * FROM Routes SET isDriving = 0 WHERE phone_id = %s;'
+    cur.execute(sql, (phone_id))
+
+    cur.close()
+    conn.close()
     return 0
 
 
 @app.route('/go/{phone_id}', methods=['GET'])
-def go():
+def go(phone_id):
     rds_host = 'hiddengemsdb.cp1ydngf7sx0.us-east-1.rds.amazonaws.com'
     name = 'HiddenGems'
     password = 'Stargazing1'
@@ -696,6 +714,12 @@ def go():
 
     conn = pymysql.connect( host=rds_host, user=name, passwd=password, db=db_name, autocommit=True, connect_timeout=15)
     cur = conn.cursor()
+
+    sql = 'UPDATE * FROM Routes SET isDriving = 1, ind = ind + 1 WHERE phone_id = %s;'
+    cur.execute(sql, (phone_id))
+
+    cur.close()
+    conn.close()
     return 0
 
 
