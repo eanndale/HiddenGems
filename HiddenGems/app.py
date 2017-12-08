@@ -53,7 +53,7 @@ def get_weather_object(lat_, lon_):
     return weather
 
 #return the temperature in fahrenheit
-@app.route('/temperature')
+@app.route('/temperature/{lat_}/{lon_}', methods=['GET'])
 def get_temperature(lat_, lon_):
     weather_object = get_weather_object(lat_,lon_)
     
@@ -62,25 +62,12 @@ def get_temperature(lat_, lon_):
 #return the weather description: eg couldy, rainy 
 @app.route('/status/{lat_}/{lon_}', methods=['GET'])
 def get_status(lat_,lon_):
-    # weather_object = get_weather_object(lat_,lon_)
-    results = {
-    "help":"help"
-    }
-    return results
-    key = "5a61d0979d0298f923b45e24d5cfd6ee"
+    weather_object = get_weather_object(lat_,lon_)
     
-    owm = pyowm.OWM(key)  # You MUST provide a valid API key
-    
-    #obs = owm.weather_at_place('Detriot,MI')                    # Toponym
-    #obs = owm.weather_at_id(2643741)                           # City ID
-    obs = owm.weather_at_coords(lat_, lon_)           # lat/lon
-    #obs = owm.daily_forecast('London,uk', limit = 5)
-    weather = obs.get_weather()
-    
-    # return weather.get_wind()
+    return weather_object.get_status()
 
 #return a detailed weather description: eg broken clouds
-@app.route('/detailed_status')
+@app.route('/detailed_status/{lat_}/{lon_}', methods=['GET'])
 def get_detailed_status(lat_,lon_):
     weather_object = get_weather_object(lat_,lon_)
     
@@ -494,6 +481,19 @@ def save():
 # Loads route
 @app.route('/route/load/{phone_id}/{route_id}', methods=['GET'])
 def load(phone_id, route_id):
+    return {'hello': 'world'}
+    results = {
+        "route_id" : route_id,
+        "places": {},
+        "keywords": [],
+        "budget": -1,
+        "start_date":"",
+        "end_date":"",
+        "radius": 10,
+        "index": 0,
+        "isDriving": 'false'
+    }
+    return results
 
     rds_host = 'hiddengemsdb.cp1ydngf7sx0.us-east-1.rds.amazonaws.com'
     name = 'HiddenGems'
