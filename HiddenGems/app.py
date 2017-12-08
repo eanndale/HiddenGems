@@ -5,6 +5,7 @@ import json
 import math
 import requests
 import pyowm
+import pkg_resources
 #from urllib.request import urlopen
 from datetime import datetime
 import datetime
@@ -20,11 +21,11 @@ def index():
     return {'hello': 'world'}
 
 #returns 5 day every 3 hour forecast at coordinates
-@app.route('/forecast')
+@app.route('/forecast/{lat_}/{lon_}', methods=['GET'])
 def forecast(lat_, lon_):
     key = "5a61d0979d0298f923b45e24d5cfd6ee"
 
-    url = 'http://api.openweathermap.org/data/2.5/forecast?lat=' + str(lat_) + '&lon=' + str(lon_) + '&APPID=' + key 
+    url = 'http://api.openweathermap.org/data/2.5/forecast?lat=' + str(lat_) + '&lon=' + str(lon_) + '&appid=' + key 
     
     response = requests.get(url)
     
@@ -48,7 +49,7 @@ def get_weather_object(lat_, lon_):
     obs = owm.weather_at_coords(lat_, lon_)           # lat/lon
     #obs = owm.daily_forecast('London,uk', limit = 5)
     weather = obs.get_weather()
-    
+
     return weather
 
 #return the temperature in fahrenheit
@@ -56,21 +57,34 @@ def get_weather_object(lat_, lon_):
 def get_temperature(lat_, lon_):
     weather_object = get_weather_object(lat_,lon_)
     
-    return weather_object.get_temperature('fahrenheit');
+    return weather_object.get_temperature('fahrenheit')
 
 #return the weather description: eg couldy, rainy 
-@app.route('/status')
+@app.route('/status/{lat_}/{lon_}', methods=['GET'])
 def get_status(lat_,lon_):
-    weather_object = get_weather_object(lat_,lon_)
+    # weather_object = get_weather_object(lat_,lon_)
+    results = {
+    "help":"help"
+    }
+    return results
+    key = "5a61d0979d0298f923b45e24d5cfd6ee"
     
-    return weather_object.get_status();
+    owm = pyowm.OWM(key)  # You MUST provide a valid API key
+    
+    #obs = owm.weather_at_place('Detriot,MI')                    # Toponym
+    #obs = owm.weather_at_id(2643741)                           # City ID
+    obs = owm.weather_at_coords(lat_, lon_)           # lat/lon
+    #obs = owm.daily_forecast('London,uk', limit = 5)
+    weather = obs.get_weather()
+    
+    # return weather.get_wind()
 
 #return a detailed weather description: eg broken clouds
 @app.route('/detailed_status')
 def get_detailed_status(lat_,lon_):
     weather_object = get_weather_object(lat_,lon_)
     
-    return weather_object.get_detailed_status();
+    return weather_object.get_detailed_status()
     
     
 # --------------------------------------------------------------------------------------------------
