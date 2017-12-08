@@ -170,6 +170,16 @@ def route():
     radius = int(input["radius"]) / 0.62137119 * 1000 # this must be in meters
     keywords = ((input["keywords"])[1:-1]).split(', ')
 
+    # # Budget calcs
+    # if (budget <= 10):
+    #     max_price = 1
+    # elif (budget <= 30):
+    #     max_price = 2
+    # elif (budget <= 60):
+    #     max_price = 3
+    # else:
+    #     max_price = 4
+
     # Add user to db
     cur.execute("INSERT IGNORE INTO Users (phone_id) VALUES (%s);", (phone_id))
 
@@ -573,9 +583,26 @@ def nearby():
 
     lat = float(input["lat"])
     long = float(input["long"])
-    term = input["term"]
+    budget = float(input["budget"])
+    max_price = 4
 
-    nearby = gmaps.places_nearby(keyword = term, location = [lat, long], radius = 50000)
+    # if (budget <= 10):
+    #     max_price = 1
+    # elif (budget <= 30):
+    #     max_price = 2
+    # elif (budget <= 60):
+    #     max_price = 3
+    # else:
+    #     max_price = 4
+
+    if (input['lodging']):
+        nearby = gmaps.places_nearby(location = [lat, long], type = 'lodging', max_price = max_price, open_now = True, radius = 8046.72) # 5 miles
+    elif (input['gas_station']):
+        nearby = gmaps.places_nearby(location = [lat, long], type = 'gas_station', max_price = max_price, open_now = True, radius = 8046.72) # 5 miles
+    elif (input['restaurant']):
+        nearby = gmaps.places_nearby(location = [lat, long], type = 'restaurant', max_price = max_price, open_now = True, radius = 8046.72) # 5 miles
+    else:
+        nearby = gmaps.places_nearby(keyword = 'rest stop', location = [lat, long], max_price = max_price, open_now = True, radius = 8046.72) # 5 miles
 
     results = {
         'places': []
@@ -642,8 +669,36 @@ def describe():
     if 'website' in desc:
         results['website'] = desc['website']
 
-
     return results
+
+
+# Dynamic routes
+@app.route('/arrive/{phone_id}', methods=['GET'])
+def arrive():
+    rds_host = 'hiddengemsdb.cp1ydngf7sx0.us-east-1.rds.amazonaws.com'
+    name = 'HiddenGems'
+    password = 'Stargazing1'
+    db_name = 'HiddenGems'
+
+    conn = pymysql.connect( host=rds_host, user=name, passwd=password, db=db_name, autocommit=True, connect_timeout=15)
+    cur = conn.cursor()
+
+    sql = 'UPDATE * FROM Routes WHERE phone_id = %s '
+    return 0
+
+
+@app.route('/go/{phone_id}', methods=['GET'])
+def go():
+    rds_host = 'hiddengemsdb.cp1ydngf7sx0.us-east-1.rds.amazonaws.com'
+    name = 'HiddenGems'
+    password = 'Stargazing1'
+    db_name = 'HiddenGems'
+
+    conn = pymysql.connect( host=rds_host, user=name, passwd=password, db=db_name, autocommit=True, connect_timeout=15)
+    cur = conn.cursor()
+    return 0
+
+
 
 
 # @app.route('/fuckyou', methods=['POST'])
