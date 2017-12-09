@@ -742,7 +742,7 @@ def arrive(phone_id):
     conn = pymysql.connect( host=rds_host, user=name, passwd=password, db=db_name, autocommit=True, connect_timeout=15)
     cur = conn.cursor()
 
-    sql = 'UPDATE * FROM Routes SET isDriving = 0 WHERE phone_id = %s;'
+    sql = 'UPDATE Routes SET isDriving = 0 WHERE phone_id = %s;'
     cur.execute(sql, (phone_id))
 
     sql = 'SELECT ind FROM Routes WHERE phone_id = %s;'
