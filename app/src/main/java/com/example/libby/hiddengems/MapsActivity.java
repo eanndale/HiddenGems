@@ -69,7 +69,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         context = getApplicationContext();
         maps = this;
 
-        if(getIntent().hasExtra("back")) {
+        if(!getIntent().hasExtra("back")) {
             radius = Preferences.getDetourRadius();
             priceRange = Preferences.getBudget();
             userPrefList = Preferences.attractionList;

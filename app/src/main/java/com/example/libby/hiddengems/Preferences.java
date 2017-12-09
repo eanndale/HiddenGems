@@ -85,9 +85,9 @@ public class Preferences {
 
     public static void setEndLoc(Place loc) {
         endLoc = loc;
-        startId = loc.getId();
-        startLat = loc.getLatLng().latitude;
-        startLng = loc.getLatLng().longitude;
+        endId = loc.getId();
+        endLat = loc.getLatLng().latitude;
+        endLng = loc.getLatLng().longitude;
     }
     public static void setEndId(String id) { endId = id; }
     public static String getEndId() { return endId; }

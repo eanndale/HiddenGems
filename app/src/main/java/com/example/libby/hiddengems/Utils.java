@@ -345,9 +345,15 @@ public class Utils {
                             JSONObject m = ja.getJSONObject(i);
                             if (i == 0 && start_frag.get() != null) {
                                 start_frag.get().setText(m.getString("name"));
+                                Preferences.setStartLat(m.getDouble("latitude"));
+                                Preferences.setStartLng(m.getDouble("longitude"));
+                                Preferences.setStartId(m.getString("place_id"));
                             }
                             else if(i == ja.length()-1 && end_frag.get() != null) {
                                 end_frag.get().setText(m.getString("name"));
+                                Preferences.setEndLat(m.getDouble("latitude"));
+                                Preferences.setEndLng(m.getDouble("longitude"));
+                                Preferences.setEndId(m.getString("place_id"));
                             }
                             arra.add(new StopInfo(
                                     m.getString("name"),
@@ -367,12 +373,16 @@ public class Utils {
                     if (result.has("start_date") &&
                             !result.getString("start_date").equals("") &&
                             start_date.get() != null) {
-                        start_date.get().setText(result.getString("start_date"));
+                        String rs = result.getString("start_date");
+                        start_date.get().setText(rs);
+                        Preferences.setStartDate(rs);
                     }
                     if (result.has("end_date") &&
                             !result.getString("end_date").equals("") &&
                             end_date.get() != null) {
-                        end_date.get().setText(result.getString("end_date"));
+                        String rs = result.getString("end_date");
+                        end_date.get().setText(rs);
+                        Preferences.setEndDate(rs);
                     }
                     if (result.has("index")) {
                         main.get().loadRoute(result.getInt("index"));
@@ -460,6 +470,7 @@ public class Utils {
         protected String doInBackground(JSONObject[] maps) {
             sending = true;
             try {
+                Log.e("route-Params:", maps[0].toString());
                 JSONObject rsp = Utils.makeRequest("https://105yog30qc.execute-api.us-east-1.amazonaws.com/api/route", maps[0].toString());
                 if (rsp != null) {
                     Log.e("json", rsp.get("places").toString());
