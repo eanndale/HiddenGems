@@ -358,7 +358,7 @@ public class Utils {
                                     m.getDouble("orig_latitude"),
                                     m.getDouble("orig_longitude"),
                                     arra.size(),
-                                    m.getString("stop_date")
+                                    m.getString("date")
 //                                ,
 //                                m.getString("forecast")
                             ));

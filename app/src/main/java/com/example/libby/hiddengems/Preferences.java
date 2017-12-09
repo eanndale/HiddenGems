@@ -12,6 +12,12 @@ public class Preferences {
     private static String androidId;
     private static Place startLoc;
     private static Place endLoc;
+    private static String startId;
+    private static String endId;
+    private static double startLat;
+    private static double startLng;
+    private static double endLat;
+    private static double endLng;
     private static String startDate;
     private static String endDate;
     private static double budget;
@@ -25,6 +31,12 @@ public class Preferences {
         endLoc = null;
         startDate = "";
         endDate = "";
+        startId = "";
+        endId = "";
+        startLat = 0.0;
+        startLng = 0.0;
+        endLat = 0.0;
+        endLng = 0.0;
         budget = 500.0;
         detourRadius = 30;
         attractionList = new ArrayList<>();
@@ -37,6 +49,12 @@ public class Preferences {
         endLoc = null;
         startDate = "";
         endDate = "";
+        startId = "";
+        endId = "";
+        startLat = 0.0;
+        startLng = 0.0;
+        endLat = 0.0;
+        endLng = 0.0;
     }
     public static boolean isInited() {
         return inited;
@@ -49,28 +67,42 @@ public class Preferences {
     }
     public static void setStartLoc(Place loc) {
         startLoc = loc;
+        startId = loc.getId();
+        startLat = loc.getLatLng().latitude;
+        startLng = loc.getLatLng().longitude;
     }
-    public static Place getStartLoc() {
-        return startLoc;
-    }
+    public static void setStartId(String id) { startId = id; }
+    public static String getStartId() { return startId; }
+    public static void setStartLat(double lat) { startLat = lat; }
+    public static double getStartLat() { return startLat; }
+    public static void setStartLng(double lng) { startLng = lng; }
+    public static double getStartLng() { return startLng; }
+    public static Place getStartLoc() { return startLoc; }
     public static void setStartDate(String date) {
         startDate = date;
     }
-    public static String getStartDate() {
-        return startDate;
+    public static String getStartDate() { return startDate; }
+
+    public static void setEndLoc(Place loc) {
+        endLoc = loc;
+        startId = loc.getId();
+        startLat = loc.getLatLng().latitude;
+        startLng = loc.getLatLng().longitude;
     }
+    public static void setEndId(String id) { endId = id; }
+    public static String getEndId() { return endId; }
+    public static void setEndLat(double lat) { endLat = lat; }
+    public static double getEndLat() { return endLat; }
+    public static void setEndLng(double lng) { endLng = lng; }
+    public static double getEndLng() { return endLng; }
+    public static Place getEndLoc() { return endLoc; }
     public static void setEndDate(String date) {
         endDate = date;
     }
     public static String getEndDate() {
         return endDate;
     }
-    public static void setEndLoc(Place loc) {
-        endLoc = loc;
-    }
-    public static Place getEndLoc() {
-        return endLoc;
-    }
+
     public static void setBudget(double b) {
         budget = b;
     }
