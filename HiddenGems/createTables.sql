@@ -28,8 +28,8 @@ end_date DATETIME NOT NULL,
 budget FLOAT(10) NOT NULL,
 radius INT NOT NULL,
 isDriving BOOL DEFAULT 0,
-ind INT,
-PRIMARY KEY(route_id),
+ind INT DEFAULT 0,
+PRIMARY KEY(phone_id),
 FOREIGN KEY (phone_id) REFERENCES Users(phone_id) ON DELETE CASCADE
 );
 
@@ -46,6 +46,7 @@ place_id VARCHAR(100) NOT NULL,
 stop_id INT NOT NULL,
 orig_latitude FLOAT NOT NULL,
 orig_longitude FLOAT NOT NULL,
+stop_date DATETIME NOT NULL,
 PRIMARY KEY(route_id, stop_id),
 FOREIGN KEY (route_id) REFERENCES Routes(route_id) ON DELETE CASCADE,
 FOREIGN KEY (place_id) REFERENCES Places(place_id) ON DELETE CASCADE

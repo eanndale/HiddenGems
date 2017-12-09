@@ -432,9 +432,14 @@ def save():
     start_place_id = input["start_place_id"]
     # start_long = float(input["start_long"])
     start_date = input["start_date"]
+    strp_start_date = datetime.datetime.strptime(start_date, '%m%d%Y')
+    # startDate = strp_start_date.strftime("%m%d%Y")
+
     end_place_id = input["end_place_id"]
     # end_long = float(input["end_long"])
     end_date = input["end_date"]
+    strp_end_date = datetime.datetime.strptime(end_date, '%m%d%Y')
+    # endDate = strp_end_date.strftime("%m%d%Y")
 
     budget = input["budget"] # maybe typecast to float
     radius = input["radius"] # maybe typecast to int
@@ -445,7 +450,7 @@ def save():
     sql.execute("INSERT IGNORE INTO Users (phone_id) VALUES (%s);", (phone_id))
     
     sql = conn.cursor()
-    sql.execute( "INSERT IGNORE INTO Routes (phone_id, start_date, end_date, budget, radius) VALUES (%s, %s, %s, %s, %s);", (phone_id, start_date, end_date, budget, radius)) 
+    sql.execute( "INSERT IGNORE INTO Routes (phone_id, start_date, end_date, budget, radius) VALUES (%s, %s, %s, %s, %s);", (phone_id, strp_start_date, strp_end_date, budget, radius)) 
     
    
     sql = conn.cursor()
@@ -465,7 +470,9 @@ def save():
         stop_id = float(i)
         # index = stops[i]["index"]
         place_id = stops[i]['placeid']
-        # stop_date = stops[i]['stop_date'] ????
+
+        stop_date = stops[i]['stop_date']
+        stopDate = stop_date.strftime("%m%d%Y")
         name = stops[i]['name']
         rating = stops[i]['rating']
         sql2 = conn.cursor()
@@ -473,7 +480,7 @@ def save():
         sql = conn.cursor()
         # sql.execute("INSERT INTO Stops(route_id, place_id, stop_id, stop_date, orig_latitude, orig_longitude) VALUES (?,?,?,?,?,?);", (route_id, place_id, i, stop_date, orig_lat, orig_long))
         # sql.execute("INSERT INTO Stops(route_id, place_id, stop_id, orig_latitude, orig_longitude) VALUES (%s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE place_id '" + place_id + "' or;", (route_id, place_id, stop_id, orig_lat, orig_long))
-        sql.execute("REPLACE INTO Stops(route_id, place_id, stop_id, orig_latitude, orig_longitude) VALUES (%s, %s, %s, %s, %s);", (route_id, place_id, stop_id, orig_lat, orig_long))
+        sql.execute("REPLACE INTO Stops(route_id, place_id, stop_id, orig_latitude, orig_longitude, stop_date) VALUES (%s, %s, %s, %s, %s, %s);", (route_id, place_id, stop_id, orig_lat, orig_long, stopDate))
 
     done = {
         'done': 'true'
@@ -486,20 +493,8 @@ def save():
 
 
 # Loads route
-@app.route('/route/load/{phone_id}/{route_id}', methods=['GET'])
-def load(phone_id, route_id):
-
-    results = {
-        "route_id" : route_id,
-        "places": {},
-        "keywords": [],
-        "budget": -1,
-        "start_date":"",
-        "end_date":"",
-        "radius": 10,
-        "index": 0,
-        "isDriving": 'false'
-    }
+@app.route('/route/load/{phone_id}', methods=['GET'])
+def load(phone_id):
 
     rds_host = 'hiddengemsdb.cp1ydngf7sx0.us-east-1.rds.amazonaws.com'
     name = 'HiddenGems'
@@ -519,8 +514,7 @@ def load(phone_id, route_id):
 
 
     results = {
-        "route_id" : route_id,
-        "places": {},
+        "places": [],
         "keywords": [],
         "budget": -1,
         "start_date":"",
@@ -544,7 +538,7 @@ def load(phone_id, route_id):
     
     #get basics from Route table FOR MORE THAN ONE ROUTE PER PHONEID
     sql = conn.cursor()
-    sql.execute("SELECT * FROM Routes WHERE phone_id = (%s) AND route_id = (%s);", (phone_id, route_id))
+    sql.execute("SELECT * FROM Routes WHERE phone_id = (%s);", (phone_id))
     r = sql.fetchall()[0]
 
     results["start_date"] = r[2]
@@ -553,6 +547,7 @@ def load(phone_id, route_id):
     results["radius"] = r[5]
     results["index"] = r[7]
     results["route_id"] = r[0]
+    route_id = r[0]
     
     # #get keywords for route
     sql= conn.cursor()
@@ -587,17 +582,22 @@ def load(phone_id, route_id):
         place_id = row1[1]
         for row2 in r2:
             if row2[0] == place_id:
+                if row1[3]:
+                    date = row1[3].strftime("%m%d%Y") 
+                else:
+                    date = ""
+
                 tempDict = {
                     "place_id" : place_id,
                     "name" : row2[1],
-                    # "stop_date" : row1[3],
+                    "stop_date" : date,
                     "orig_latitude" : row1[3],
                     "orig_longitude" : row1[4],
                     "latitude" : row2[2],
                     "longitude" : row2[3]
                 }
                 break
-        results["places"][stop_id] = tempDict
+        results["places"].append(tempDict)
 
     sql.close()
     conn.close()
