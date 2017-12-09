@@ -20,8 +20,8 @@ public class SaveInfo {
 
     public SaveInfo() {
         this(Preferences.getAndroidId(),
-                Preferences.getStartLoc().getId(), Preferences.getStartDate(),
-                Preferences.getEndLoc().getId(), Preferences.getEndDate(),
+                Preferences.getStartId(), Preferences.getStartDate(),
+                Preferences.getEndId(), Preferences.getEndDate(),
                 Preferences.getBudget(), Preferences.getDetourRadius(),
                 Preferences.attractionList, Utils.arra);
     }

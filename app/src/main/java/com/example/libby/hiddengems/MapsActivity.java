@@ -56,8 +56,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private ArrayAdapter<String> adapter;
     private ArrayList<String> as = new ArrayList<>();
 
-    private Place startPlace;
-    private Place endPlace;
+//    private Place startPlace;
+//    private Place endPlace;
     private int radius;
     private double priceRange;
     private ArrayList<String> userPrefList;
@@ -68,63 +68,44 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Utils.init(this);
         context = getApplicationContext();
         maps = this;
-        //UPdate: preferences is a window before map activity
-//        startPlace = (Place) getIntent().getParcelableExtra("start");
-//        endPlace = (Place) getIntent().getParcelableExtra("end");
-//        radius = getIntent().getIntExtra("radius", 30);
-//        priceRange = getIntent().getBooleanArrayExtra("priceRange");
-//        userPrefList = getIntent().getStringArrayListExtra("preferences");
-        startPlace = Preferences.getStartLoc();
-        endPlace = Preferences.getEndLoc();
-        radius = Preferences.getDetourRadius();
-        priceRange = Preferences.getBudget();
-        userPrefList = Preferences.attractionList;
 
-        Log.i("Start: ", startPlace.getAddress().toString());
-        Log.i("End: ", endPlace.getAddress().toString());
+        if(!getIntent().hasExtra("back")) {
+            radius = Preferences.getDetourRadius();
+            priceRange = Preferences.getBudget();
+            userPrefList = Preferences.attractionList;
+
+//        Log.i("Start: ", startPlace.getAddress().toString());
+//        Log.i("End: ", endPlace.getAddress().toString());
 
 
 //        Preferences and budget and radius
 //        budget and radius can just be added to the msg
 
-        ArrayList<String> prefs = new ArrayList<>();
-        final JSONObject startMsg = new JSONObject();
-        try {
-            startMsg.put("phone_id", Preferences.getAndroidId());
+            ArrayList<String> prefs = new ArrayList<>();
+            final JSONObject startMsg = new JSONObject();
+            try {
+                startMsg.put("phone_id", Preferences.getAndroidId());
+                startMsg.put("start_place_id", Preferences.getStartId());
+                startMsg.put("start_date", Preferences.getStartDate());
+                startMsg.put("end_place_id", Preferences.getEndId());
+                startMsg.put("end_date", Preferences.getEndDate());
+                startMsg.put("budget", priceRange);
+                startMsg.put("radius", radius);
+                if (userPrefList.isEmpty()) {
+                    userPrefList.add("attractions");
+                    startMsg.put("keywords", userPrefList);
+                } else {
+                    startMsg.put("keywords", userPrefList);
+                }
 
-//            startMsg.put("start_long", startPlace.getLatLng().longitude);
-//            startMsg.put("start_lat", startPlace.getLatLng().latitude);
-//            startMsg.put("start_address", Preferences.getStartLoc().getAddress());
-            startMsg.put("start_place_id", Preferences.getStartLoc().getId());
-            startMsg.put("start_date", Preferences.getStartDate());
-
-//            startMsg.put("end_long", endPlace.getLatLng().longitude);
-//            startMsg.put("end_lat", endPlace.getLatLng().latitude);
-//            startMsg.put("end_address", Preferences.getEndLoc().getAddress());
-            startMsg.put("end_place_id", Preferences.getEndLoc().getId());
-            startMsg.put("end_date", Preferences.getEndDate());
-
-            //TODO EMMIE!!!
-            startMsg.put("budget", priceRange);
-            startMsg.put("radius", radius);
-            if (userPrefList.isEmpty()) {
-                userPrefList.add("attractions");
-                startMsg.put("keywords", userPrefList);
+                new Utils.sendRoute().execute(startMsg);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            else {
-                startMsg.put("keywords", userPrefList);
-            }
-
-//        Map<String, String> startMsg = new HashMap<>();
-//        startMsg.put("start_address", startPlace.getAddress().toString());
-//        startMsg.put("end_address", endPlace.getAddress().toString());
-//        final AsyncTask<Map<String, Double>, Void, String> msgs = new Utils.sendRoute().execute(startMsg);
-            new Utils.sendRoute().execute(startMsg);
         }
-        catch(Exception e) {
-            e.printStackTrace();
+        else {
+            Utils.sending = false;
         }
-
         Log.i("message", "onCreateStart");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
