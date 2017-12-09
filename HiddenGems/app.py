@@ -360,7 +360,7 @@ def update():
 
     # Insert rejected place into db
     sql = "INSERT IGNORE INTO UserPlaces(phone_id, place_id, name) VALUES(%s, %s, %s);"
-    cur.execute(sql, (input['phone_id'], input['place_id'], input[name]))
+    cur.execute(sql, (input['phone_id'], input['place_id'], input['name']))
 
     # Format multiple keywords for API search
     parsed_keywords = ""
