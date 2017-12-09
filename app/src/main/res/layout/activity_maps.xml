@@ -6,162 +6,173 @@ android:layout_width="match_parent"
 android:layout_height="match_parent"
 tools:context=".MainActivity">
 
-<TabHost
-    android:id="@+id/tabHost"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:layout_alignParentTop="true"
-    android:layout_centerHorizontal="true">
-
-    <LinearLayout
+    <TabHost
+        android:id="@+id/tabHost"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/maps_negativeButton"
-                android:layout_width="0dp"
-                android:layout_height="fill_parent"
-                android:layout_weight="1"
-                android:text="Start Over" />
-
-            <Button
-                android:id="@+id/maps_preferences"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Preferences" />
-        </LinearLayout>
-
-        <TabWidget
-            android:id="@android:id/tabs"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"></TabWidget>
-
-        <FrameLayout
-            android:id="@android:id/tabcontent"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
             <LinearLayout
-                android:id="@+id/tab2"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
-
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <EditText
-                        android:id="@+id/stops"
-                        android:layout_width="294dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:layout_weight="4"
-                        android:ems="10"
-                        android:inputType="textPersonName"
-                        android:text="Type attractions" />
-
-                    <Button
-                        android:id="@+id/add_stops"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="16dp"
-                        android:layout_weight=".5"
-                        android:text="Add" />
-                </LinearLayout>
-
-                <ListView
-                    android:id="@+id/stopListView"
-                    android:layout_width="match_parent"
-                    android:layout_height="235dp"
-                    android:layout_weight="1"
-                    android:clickable="true"
-                    android:scrollbars="vertical">
-
-                </ListView>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <Button
-                        android:id="@+id/clear_stops"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Clear Stops" />
-
-                    <Button
-                        android:id="@+id/delete_stops"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Delete Selected" />
-                </LinearLayout>
-
-            </LinearLayout>
-
-            <RelativeLayout
-                android:id="@+id/tab1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:orientation="horizontal">
 
-                <fragment xmlns:android="http://schemas.android.com/apk/res/android"
-                    xmlns:map="http://schemas.android.com/apk/res-auto"
-                    xmlns:tools="http://schemas.android.com/tools"
-                    android:id="@+id/map"
-                    android:name="com.google.android.gms.maps.SupportMapFragment"
-                    android:layout_width="match_parent"
+                <Button
+                    android:id="@+id/maps_negativeButton"
+                    android:layout_width="0dp"
                     android:layout_height="fill_parent"
-                    android:layout_above="@+id/maps_bot"
-                    android:layout_alignParentStart="true"
-                    tools:context="com.example.libby.hiddengems.MapsActivity" />
+                    android:layout_weight="1"
+                    android:text="Start Over" />
+
+                <Button
+                    android:id="@+id/maps_preferences"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Preferences" />
+            </LinearLayout>
+
+            <TabWidget
+                android:id="@android:id/tabs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"></TabWidget>
+
+            <FrameLayout
+                android:id="@android:id/tabcontent"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
                 <LinearLayout
-                    android:id="@+id/maps_bot"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true"
-                    android:background="@android:drawable/bottom_bar"
-                    android:orientation="horizontal"
-                    android:paddingBottom="1.0dip"
-                    android:paddingLeft="4.0dip"
-                    android:paddingRight="4.0dip"
-                    android:paddingTop="5.0dip"
-                    android:visibility="visible">
+                    android:id="@+id/tab2"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
 
-                    <Button
-                        android:id="@+id/maps_save"
-                        android:layout_width="0dp"
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1.0"
-                        android:text="Save Route" />
+                        android:orientation="horizontal">
 
-                    <Button
-                        android:id="@+id/maps_positiveButton"
-                        android:layout_width="0.0dip"
-                        android:layout_height="fill_parent"
-                        android:layout_weight="1.0"
-                        android:text="Drive" />
+                        <!--<EditText-->
+                        <!--android:id="@+id/stops"-->
+                        <!--android:layout_width="294dp"-->
+                        <!--android:layout_height="wrap_content"-->
+                        <!--android:layout_marginStart="16dp"-->
+                        <!--android:layout_weight="4"-->
+                        <!--android:ems="10"-->
+                        <!--android:inputType="textPersonName"-->
+                        <!--android:text="Type attractions" />-->
+
+                        <!--<Button-->
+                        <!--android:id="@+id/add_stops"-->
+                        <!--android:layout_width="wrap_content"-->
+                        <!--android:layout_height="wrap_content"-->
+                        <!--android:layout_marginEnd="16dp"-->
+                        <!--android:layout_weight=".5"-->
+                        <!--android:text="Add" />-->
+                        <fragment
+                            android:id="@+id/search_place_autocomplete_fragment"
+                            android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
+                            android:layout_width="match_parent"
+                            android:layout_height="61dp"
+                            android:layout_marginEnd="16dp"
+                            android:layout_marginStart="16dp"
+                            android:layout_marginTop="10dp"
+                            android:ems="10"
+                            android:clickable="true"
+                            android:hint="Type place..." />
+                    </LinearLayout>
+
+                    <ListView
+                        android:id="@+id/listView"
+                        android:layout_width="match_parent"
+                        android:layout_height="235dp"
+                        android:layout_weight="1"
+                        android:clickable="true"
+                        android:scrollbars="vertical">
+
+                    </ListView>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <Button
+                            android:id="@+id/clear_stops"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Clear Stops" />
+
+                        <Button
+                            android:id="@+id/delete_stops"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Delete Selected" />
+                    </LinearLayout>
 
                 </LinearLayout>
 
-            </RelativeLayout>
+                <RelativeLayout
+                    android:id="@+id/tab1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+                        xmlns:map="http://schemas.android.com/apk/res-auto"
+                        xmlns:tools="http://schemas.android.com/tools"
+                        android:id="@+id/map"
+                        android:name="com.google.android.gms.maps.SupportMapFragment"
+                        android:layout_width="match_parent"
+                        android:layout_height="fill_parent"
+                        android:layout_above="@+id/maps_bot"
+                        android:layout_alignParentStart="true"
+                        tools:context="com.example.libby.hiddengems.MapsActivity" />
+
+                    <LinearLayout
+                        android:id="@+id/maps_bot"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentBottom="true"
+                        android:background="@android:drawable/bottom_bar"
+                        android:orientation="horizontal"
+                        android:paddingBottom="1.0dip"
+                        android:paddingLeft="4.0dip"
+                        android:paddingRight="4.0dip"
+                        android:paddingTop="5.0dip"
+                        android:visibility="visible">
+
+                        <Button
+                            android:id="@+id/maps_save"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1.0"
+                            android:text="Save Route" />
+
+                        <Button
+                            android:id="@+id/maps_positiveButton"
+                            android:layout_width="0.0dip"
+                            android:layout_height="fill_parent"
+                            android:layout_weight="1.0"
+                            android:text="Drive" />
+
+                    </LinearLayout>
+
+                </RelativeLayout>
 
 
-        </FrameLayout>
-    </LinearLayout>
-</TabHost>
+            </FrameLayout>
+        </LinearLayout>
+    </TabHost>
 
 </LinearLayout>
