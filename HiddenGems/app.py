@@ -863,28 +863,26 @@ def go(phone_id):
     return {'ind': ind}
 
 
+# Returns the best stop index for newly added points on the route
+@app.route('/insert', methods=['POST'])
+def insert(phone_id):
+    request = app.current_request
+    input = request.json_body
 
+    lat = float(input['lat'])
+    long = float(input['long'])
+    places = input['places']
 
-# @app.route('/fuckyou', methods=['POST'])
-# def fuckyou():
-#     rds_host = 'hiddengemsdb.cp1ydngf7sx0.us-east-1.rds.amazonaws.com'
-#     name = 'HiddenGems'
-#     password = 'Stargazing1'
-#     db_name = 'hiddengemsdb'
-#
-#
-#     # this was causing problems, will fix soon.
-#     conn = pymysql.connect(rds_host, user=name, passwd=password, db=db_name, autocommit=True, connect_timeout=15)
-#
-#     cur = conn.cursor()
-#     i = 11
-#     l = "hello"
-#     j = 12.5
-#     k = 13.5
-    #     sql = "INSERT INTO hiddengemsdb.Places(place_id, name, latitude, longitude) VALUES(%s, %s, %s, %s);"
-    #     cur.execute(sql, (i, "hello", j, k))
-#
-#     cur.close()
-#     conn.close()
-#
-#     return 0
+    min_prev = 10000000000
+    min_next = 10000000000
+    index = 10000000000
+
+    for i in range(0, len(places) - 1):
+        dist_prev = getPathLength(lat, long, float(places[i]['lat']), float(places[i]['long']))
+        dist_next = getPathLength(lat, long, float(places[i + 1]['lat']), float(places[i + 1]['long']))
+        if (dist_prev + dist_next) < (min_prev + min_next):
+            min_prev = dist_prev
+            min_next = dist_next
+            index = i
+
+    return {'ind': index}
