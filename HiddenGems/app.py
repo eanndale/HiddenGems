@@ -70,7 +70,7 @@ def get_weather_object(lat_, lon_):
     #obs = owm.daily_forecast('London,uk', limit = 5)
     weather = obs.get_weather()
 
-    today = owm.daily_forecast()
+    # today = owm.daily_forecast()
 
     results = {
         "temp": weather.get_temperature('fahrenheit'), # temp_max, temp, temp_min
@@ -89,7 +89,7 @@ def get_temperature(lat_, lon_):
 #return the weather description: eg couldy, rainy 
 @app.route('/status/{lat_}/{lon_}', methods=['GET'])
 def get_status(lat_,lon_):
-    weather_object = get_weather_object(lat_,lon_)
+    weather_object = get_weather_object(float(lat_),float(lon_))
     
     return weather_object.get_status()
 
@@ -580,7 +580,7 @@ def load(phone_id):
     sql.execute("SELECT keyword FROM Keywords WHERE route_id = (%s);", (route_id))
     r = sql.fetchall()
     for keyword in r:
-         results["keywords"].append(keyword)
+         results["keywords"].append(r[i])
 
     # #place: 
     # # long, lat, 
