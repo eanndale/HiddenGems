@@ -536,7 +536,7 @@ def load(phone_id):
     # phone_id = input['phone_id']
     
     #start and end location, start and end dates, stops, preferences, long/lat, place ID, place name, description
-# look for route id based on phone id
+    # look for route id based on phone id
 
     results = {
         "places": [],
@@ -624,6 +624,7 @@ def load(phone_id):
         results["places"].append(tempDict)
 
     sql.close()
+    sql2.close()
     conn.close()
     return results
 
