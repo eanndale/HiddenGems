@@ -70,7 +70,7 @@ def get_weather_object(lat_, lon_):
     #obs = owm.daily_forecast('London,uk', limit = 5)
     weather = obs.get_weather()
 
-    today = owm.daily_forecast()
+    # today = owm.daily_forecast()
 
     results = {
         "temp": weather.get_temperature('fahrenheit'), # temp_max, temp, temp_min
@@ -89,7 +89,7 @@ def get_temperature(lat_, lon_):
 #return the weather description: eg couldy, rainy 
 @app.route('/status/{lat_}/{lon_}', methods=['GET'])
 def get_status(lat_,lon_):
-    weather_object = get_weather_object(lat_,lon_)
+    weather_object = get_weather_object(float(lat_),float(lon_))
     
     return weather_object.get_status()
 
@@ -454,15 +454,15 @@ def save():
 
     phone_id = input["phone_id"] # maybe typecast to int
     start_place_id = input["start_place_id"]
-    # start_long = float(input["start_long"])
     start_date = input["start_date"] if "start_date" in input else ""
-    strp_start_date = datetime.datetime.strptime(start_date, '%m%d%Y') if start_date else ""
+    # start_long = float(input["start_long"])
+    # strp_start_date = datetime.datetime.strptime(start_date, '%m%d%Y') if start_date else ""
     # startDate = strp_start_date.strftime("%m%d%Y")
 
     end_place_id = input["end_place_id"]
     # end_long = float(input["end_long"])
     end_date = input["end_date"] if "end_date" in input else ""
-    strp_end_date = datetime.datetime.strptime(end_date, '%m%d%Y') if end_date else ""
+    # strp_end_date = datetime.datetime.strptime(end_date, '%m%d%Y') if end_date else ""
     # endDate = strp_end_date.strftime("%m%d%Y")
 
 
@@ -475,7 +475,7 @@ def save():
     sql.execute("INSERT IGNORE INTO Users (phone_id) VALUES (%s);", (phone_id))
     
     sql = conn.cursor()
-    sql.execute( "REPLACE INTO Routes (phone_id, start_date, end_date, budget, radius) VALUES (%s, %s, %s, %s, %s);", (phone_id, strp_start_date, strp_end_date, budget, radius)) 
+    sql.execute( "REPLACE INTO Routes (phone_id, start_date, end_date, budget, radius) VALUES (%s, %s, %s, %s, %s);", (phone_id, start_date, end_date, budget, radius)) 
     
    
     sql = conn.cursor()
@@ -495,9 +495,9 @@ def save():
         stop_id = float(i)
         # index = stops[i]["index"]
         place_id = stops[i]['placeid']
-        stop_num = stops[i]["stop_num"] if "stop_num" in stops[i] else 0
+        stop_num = stops[i]["stop_num"] if "stop_num" in stops[i] else ""
         stop_date = stops[i]['stop_date'] if 'stop_date' in stops[i] else ""
-        stopDate = stop_date.strftime("%m%d%Y") if 'stop_date' in stops[i] else 0
+        # stopDate = stop_date.strftime("%m%d%Y") if 'stop_date' in stops[i] else ""
         name = stops[i]['name']
         rating = stops[i]['rating']
         sql2 = conn.cursor()
@@ -532,10 +532,9 @@ def load(phone_id):
 
     # request = app.current_request
     # input = request.json_body
-    
     # phone_id = input['phone_id']
     
-    #start and end location, start and end dates, stops, preferences, long/lat, place ID, place name, description
+    # start and end location, start and end dates, stops, preferences, long/lat, place ID, place name, description
     # look for route id based on phone id
 
     results = {
@@ -549,6 +548,7 @@ def load(phone_id):
         "isDriving": 'false'
     }
     
+
     #get basics from Route table FOR ONE ROUTE PER PHONEID
     # sql = conn.cursor()
     # sql.execute("SELECT * FROM Routes WHERE phone_id = (%s);", (phone_id))
@@ -566,6 +566,7 @@ def load(phone_id):
     sql.execute("SELECT * FROM Routes WHERE phone_id = (%s);", (phone_id))
     r = sql.fetchall()[0]
 
+
     results["start_date"] = r[2]
     results["end_date"] = r[3]
     results["budget"] = r[4]
@@ -579,7 +580,7 @@ def load(phone_id):
     sql.execute("SELECT keyword FROM Keywords WHERE route_id = (%s);", (route_id))
     r = sql.fetchall()
     for keyword in r:
-         results["keywords"].append(keyword)
+        results["keywords"].append(keyword[0])
 
     # #place: 
     # # long, lat, 
@@ -614,7 +615,7 @@ def load(phone_id):
                 tempDict = {
                     "place_id" : place_id,
                     "name" : row2[1],
-                    "stop_date" : row1[5].strftime("%m%d%Y") if row1[5] else "",
+                    "stop_date" : row1[5] if row1[5] else "",
                     "orig_latitude" : row1[3],
                     "orig_longitude" : row1[4],
                     "latitude" : row2[2],
@@ -625,8 +626,9 @@ def load(phone_id):
 
     sql.close()
     sql2.close()
-    assert(false)
+    
     conn.close()
+
     return results
 
 
