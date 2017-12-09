@@ -50,11 +50,11 @@ def get_weather_object(lat_, lon_):
     #obs = owm.daily_forecast('London,uk', limit = 5)
     weather = obs.get_weather()
 
+    today = owm.daily_forecast()
+
     results = {
-        "current": weather.get_temperature('fahrenheit'),
-        "high": 0,
-        "low": 0,
-        "description": 0
+        "temp": weather.get_temperature('fahrenheit'), # temp_max, temp, temp_min
+        "description": weather.get_detailed_status()
     }
 
     return weather
@@ -263,7 +263,8 @@ def route():
             'orig_lat': start_lat,
             'orig_long': start_long,
             'index': 0,
-            'date': strp_start_date.strftime("%m%d%Y") if start_date else ''
+            'date': strp_start_date.strftime("%m%d%Y") if start_date else '',
+            'num': 0
     }
     results['places'].append(data)
 
@@ -286,7 +287,8 @@ def route():
                     'orig_lat': coords[i][0],
                     'orig_long': coords[i][1],
                     'index': count,
-                    'date': (strp_start_date + datetime.timedelta(days=i/2)).strftime("%m%d%Y") if start_date else ''
+                    'date': (strp_start_date + datetime.timedelta(days=i/2)).strftime("%m%d%Y") if start_date else '',
+                    'num': i % 2 + 1 # first stop: 1, second stop: 2, each day
                     }
 
             sql = "INSERT IGNORE INTO Places(place_id, name, latitude, longitude) VALUES(%s, %s, %s, %s);"
@@ -304,7 +306,8 @@ def route():
             'orig_lat': end_lat,
             'orig_long': end_long,
             'index': count,
-            'date': strp_end_date.strftime("%m%d%Y") if start_date else ''
+            'date': strp_end_date.strftime("%m%d%Y") if start_date else '',
+            'num': 0
     }
 
     sql = "INSERT IGNORE INTO Places(place_id, name, latitude, longitude) VALUES(%s, %s, %s, %s);"
@@ -367,7 +370,8 @@ def update():
                         'orig_lat': input['orig_lat'],
                         'orig_long': input['orig_long'],
                         'index': input['index'],
-                        'date': input['date']
+                        'date': input['date'],
+                        'num': input['num']
                         }
 
                 # Add new location to db if unique
@@ -604,7 +608,7 @@ def load(phone_id):
     return results
 
 
-@app.route('/nearby', methods=['GET'])
+@app.route('/nearby', methods=['POST'])
 def nearby():
     # gmaps = googlemaps.Client(key='AIzaSyDTo1GrHUKKmtBiVw4xBQxD1Uv24R1ypvY')
     gmaps = googlemaps.Client(key='AIzaSyD_O6TM3vX-EbHpsSwVu-DPsfCxRar7xJo')
