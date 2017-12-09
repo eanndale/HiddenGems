@@ -602,7 +602,7 @@ def load(phone_id):
                 tempDict = {
                     "place_id" : place_id,
                     "name" : row2[1],
-                    "stop_date" : row1[5].strftime("%m%d%Y"),
+                    "stop_date" : row1[5].strftime("%m%d%Y") if row1[5] else '',
                     "orig_latitude" : row1[3],
                     "orig_longitude" : row1[4],
                     "latitude" : row2[2],
@@ -638,14 +638,14 @@ def nearby():
     # else:
     #     max_price = 4
 
-    if (input['lodging']):
-        nearby = gmaps.places_nearby(location = [lat, long], type = 'lodging', max_price = max_price, open_now = True, radius = 8046.72) # 5 miles
-    elif (input['gas_station']):
-        nearby = gmaps.places_nearby(location = [lat, long], type = 'gas_station', max_price = max_price, open_now = True, radius = 8046.72) # 5 miles
-    elif (input['restaurant']):
-        nearby = gmaps.places_nearby(location = [lat, long], type = 'restaurant', max_price = max_price, open_now = True, radius = 8046.72) # 5 miles
+    if ('lodging' in input):
+        nearby = gmaps.places_nearby(location = [lat, long], type = 'lodging', max_price = max_price, open_now = True, radius = 50000) # 5 miles
+    elif ('gas_station' in input):
+        nearby = gmaps.places_nearby(location = [lat, long], type = 'gas_station', max_price = max_price, open_now = True, radius = 50000) # 5 miles
+    elif ('restaurant' in input):
+        nearby = gmaps.places_nearby(location = [lat, long], type = 'restaurant', max_price = max_price, open_now = True, radius = 50000) # 5 miles
     else:
-        nearby = gmaps.places_nearby(keyword = 'rest stop', location = [lat, long], max_price = max_price, open_now = True, radius = 8046.72) # 5 miles
+        nearby = gmaps.places_nearby(keyword = 'reststop', location = [lat, long], max_price = max_price, open_now = True, radius = 50000) # 5 miles
 
     results = {
         'places': []
@@ -735,7 +735,7 @@ def arrive(phone_id):
     sql = 'SELECT ind FROM Routes WHERE phone_id = %s;'
     cur.execute(sql, (phone_id))
     result = cur.fetchone
-    ind = result['ind']
+    ind = result[0]
 
     cur.close()
     conn.close()
@@ -758,7 +758,7 @@ def go(phone_id):
     sql = 'SELECT ind FROM Routes WHERE phone_id = %s;'
     cur.execute(sql, (phone_id))
     result = cur.fetchone()
-    ind = result.ind
+    ind = result[0]
 
     cur.close()
     conn.close()
