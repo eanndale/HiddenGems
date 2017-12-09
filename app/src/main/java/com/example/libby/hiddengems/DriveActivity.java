@@ -22,6 +22,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -44,8 +45,9 @@ import org.json.JSONObject;
 
 public class DriveActivity extends AppCompatActivity {
     static boolean firstTime = false;
+    static boolean done = false;
     static DriveActivity da;
-    static GoogleApiClient locClient;
+//    static GoogleApiClient locClient;
     static Location mLastLocation;
     private final LocationListener mLocationListener = new LocationListener() {
         @Override
@@ -82,6 +84,10 @@ public class DriveActivity extends AppCompatActivity {
         mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, LOCATION_REFRESH_TIME, LOCATION_REFRESH_DISTANCE, mLocationListener);
+            mLastLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        }
+        else {
+            Log.e("location", "NEVER CREATED");
         }
 //        locCallBack lcb = new locCallBack();
 //        locClient = new GoogleApiClient.Builder(lcb)
@@ -99,6 +105,10 @@ public class DriveActivity extends AppCompatActivity {
             } catch (Exception e) {
                 Log.e("from map, drive", e.getStackTrace().toString());
             }
+        }
+        else if (getIntent().hasExtra("index")){
+            int index = getIntent().getIntExtra("index", 0);
+            updateCurrent(index);
         }
 
         //Rest Stop
@@ -172,63 +182,72 @@ public class DriveActivity extends AppCompatActivity {
                 new Utils.sendNearby().execute(json.toString());
             } }
         );
-
+        final Button goArrive = (Button)findViewById(R.id.goArrived);
+        goArrive.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                JSONObject json = new JSONObject();
+                try {
+                    json.put("phone_id", Preferences.getAndroidId());
+                    if (goArrive.getText().equals("Arrived")) {
+                        new Utils.sendArrive().execute(json);
+                        if(!done) {
+                            goArrive.setText("Go");
+                        }
+                        else {
+                            goArrive.setText("Start Anew?");
+                            goArrive.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    Preferences.reset();
+                                    Utils.reset();
+                                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                                    startActivity(intent);                                }
+                            });
+                        }
+                    }
+                    else if(goArrive.getText().equals("Go")) {
+                        new Utils.sendGo(da).execute(json);
+                        goArrive.setText("Arrived");
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
         if(firstTime) {
             firstTime = false;
-            StopInfo si = Utils.arra.get(0);
-            StringBuilder s = new StringBuilder();
-            s.append("google.navigation:q=");
-            s.append(si.latitude);
-            s.append(",");
-            s.append(si.longitude);
-            Uri gmmIntentUri = Uri.parse(s.toString());
-            Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
-            mapIntent.setPackage("com.google.android.apps.maps");
-            startActivity(mapIntent);
+            routeGoogleTo(0);
         }
+    }
+
+    public void routeGoogleTo(int index) {
+        StopInfo si = Utils.arra.get(index);
+        StringBuilder s = new StringBuilder();
+        s.append("google.navigation:q=");
+        s.append(si.latitude);
+        s.append(",");
+        s.append(si.longitude);
+        Uri gmmIntentUri = Uri.parse(s.toString());
+        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+        mapIntent.setPackage("com.google.android.apps.maps");
+        startActivity(mapIntent);
     }
 
     public void updateCurrent(int index) {
         StopInfo curr = Utils.arra.get(index);
         TextView curr_view = (TextView)findViewById(R.id.current_dest);
         curr_view.setText(curr.getName());
-        Button curr_button = (Button)findViewById(R.id.current_routing);
-        curr_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                JSONObject json = new JSONObject();
-                try {
-                    json.put("phone_id", Preferences.getAndroidId());
-                    new Utils.sendArrive().execute(json);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
 
         TextView next_view = (TextView)findViewById(R.id.next_dest);
-        Button next_button = (Button)findViewById(R.id.next_routing);
         if(Utils.arra.size() != index+1) {
             StopInfo next = Utils.arra.get(index + 1);
             next_view.setText(next.getName());
-            next_button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    JSONObject json = new JSONObject();
-                    try {
-                        json.put("phone_id", Preferences.getAndroidId());
-                        new Utils.sendGo(da).execute(json);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-            //TODO SendWeather update
-//            updateWeather(index, true);
+            updateWeather(index, true);
         }
         else {
-            next_view.setText("No more locs");
-            next_button.setOnClickListener(null);
+            next_view.setText("Final Destination on route");
+            done = true;
             updateWeather(index, false);
         }
     }
@@ -236,15 +255,35 @@ public class DriveActivity extends AppCompatActivity {
     public void updateWeather(int index, boolean hasNext) {
         TextView curr_high = (TextView)findViewById(R.id.current_high);
         TextView curr_low = (TextView)findViewById(R.id.current_low);
+        ImageView curr_icon = (ImageView)findViewById(R.id.current_weather);
+        JSONObject json = new JSONObject();
+        try {
+            json.put("lat", Utils.arra.get(index).getLoc().latitude);
+            json.put("lng", Utils.arra.get(index).getLoc().longitude);
+            new Utils.sendWeather(curr_high, curr_low, curr_icon).execute(json);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
 
         TextView next_high = (TextView)findViewById(R.id.next_high);
         TextView next_low = (TextView)findViewById(R.id.next_low);
+        ImageView next_icon = (ImageView)findViewById(R.id.next_weather);
         if (!hasNext) {
             next_high.setText("-");
             next_low.setText("-");
+            next_icon.setVisibility(View.INVISIBLE);
         }
         else {
-
+            next_icon.setVisibility(View.VISIBLE);
+            JSONObject jso = new JSONObject();
+            try {
+                jso.put("lat", Utils.arra.get(index+1).getLoc().latitude);
+                jso.put("lng", Utils.arra.get(index+1).getLoc().longitude);
+                new Utils.sendWeather(next_high, next_low, next_icon).execute(jso);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
     }

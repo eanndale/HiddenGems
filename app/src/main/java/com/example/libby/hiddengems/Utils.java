@@ -2,12 +2,12 @@ package com.example.libby.hiddengems;
 
 import android.app.Dialog;
 import android.content.Context;
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RatingBar;
 import android.widget.TextView;
@@ -132,6 +132,89 @@ public class Utils {
         return ret.toString();
     }
 
+    public static class sendWeather extends AsyncTask<JSONObject, Void, JSONObject> {
+        private final WeakReference<TextView> high;
+        private final WeakReference<TextView> low;
+        private final WeakReference<ImageView> icon;
+
+        public sendWeather(TextView high, TextView low, ImageView icon) {
+            this.high = new WeakReference<TextView>(high);
+            this.low = new WeakReference<TextView>(low);
+            this.icon = new WeakReference<ImageView>(icon);
+        }
+
+        @Override
+        protected JSONObject doInBackground(JSONObject[] jsonObjects) {
+            try {
+                JSONObject rsp = Utils.getRequest("https://105yog30qc.execute-api.us-east-1.amazonaws.com/api/forecast", jsonToUrl(jsonObjects[0]));
+                return rsp;
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(JSONObject result) {
+            if(result != null) {
+                try {
+                    if (high.get() != null && result.has("high")) {
+                        high.get().setText(String.valueOf(result.getInt("high")));
+                    }
+                    if (low.get() != null && result.has("low")) {
+                        low.get().setText(result.getString("low"));
+                    }
+                    JSONObject cast = result.getJSONObject("forecast");
+                    JSONObject daily = cast.getJSONObject("daily");
+                    JSONArray why = daily.getJSONArray("data");
+                    JSONObject killme = why.getJSONObject(0);
+                    if (icon.get() != null && killme.has("icon")) {
+                        icon.get().setVisibility(View.VISIBLE);
+                        switch(killme.getString("icon")) {
+                            case "fog":
+                                icon.get().setImageResource(R.drawable.fog);
+                                break;
+                            case "clear-day":
+                                icon.get().setImageResource(R.drawable.sun);
+                                break;
+                            case "clear-night":
+                                icon.get().setImageResource(R.drawable.night);
+                                break;
+                            case "rain":
+                                icon.get().setImageResource(R.drawable.rain);
+                                break;
+                            case "snow":
+                                icon.get().setImageResource(R.drawable.snow);
+                                break;
+                            case "cloudy":
+                                icon.get().setImageResource(R.drawable.clouds);
+                                break;
+                            case "sleet":
+                                icon.get().setImageResource(R.drawable.sleet);
+                                break;
+                            case "partly-cloudy-day":
+                            case "partly-cloudy-night":
+                                icon.get().setImageResource(R.drawable.partly_cloudy);
+                                break;
+                            case "hail":
+                                icon.get().setImageResource(R.drawable.hail);
+                                break;
+                            case "thunderstorm":
+                                icon.get().setImageResource(R.drawable.storm);
+                                break;
+                            default:
+                                icon.get().setVisibility(View.INVISIBLE);
+                        }
+                    }
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
     public static class sendGo extends AsyncTask<JSONObject, Void, Integer> {
         private final WeakReference<DriveActivity> driveActivity;
         sendGo(DriveActivity d) {
@@ -154,16 +237,12 @@ public class Utils {
         protected void onPostExecute(Integer res) {
             if (res != -1 && driveActivity.get() != null) {
                 driveActivity.get().updateCurrent(res);
+                driveActivity.get().routeGoogleTo(res);
             }
         }
     }
 
     public static class sendArrive extends AsyncTask<JSONObject, Void, Integer> {
-//        private final WeakReference<DriveActivity> da;
-//        public sendArrive(DriveActivity d) {
-//            da = new WeakReference<DriveActivity>(d);
-//        }
-
         @Override
         protected Integer doInBackground(JSONObject[] maps) {
             try {
@@ -177,13 +256,6 @@ public class Utils {
             }
             return -1;
         }
-
-//        @Override
-//        protected void onPostExecute(Integer result) {
-//            if (result != -1 && da.get() != null) {
-//                da.get().updateCurrent(result);
-//            }
-//        }
 
     }
     public static class sendSave extends AsyncTask<String, Void, String> {
@@ -302,7 +374,7 @@ public class Utils {
                             end_date.get() != null) {
                         end_date.get().setText(result.getString("end_date"));
                     }
-                    if (result.has("index") && result.getInt("index") > 0) {
+                    if (result.has("index")) {
                         main.get().loadRoute(result.getInt("index"));
                     }
                 } catch (Exception e) {
