@@ -25,15 +25,24 @@ def index():
 def forecast(lat_, lon_):
     key = "5a61d0979d0298f923b45e24d5cfd6ee"
 
-    url = 'http://api.openweathermap.org/data/2.5/forecast?lat=' + str(lat_) + '&lon=' + str(lon_) + '&appid=' + key 
-    
+    # Weather at certain time
+    url = 'http://api.openweathermap.org/data/2.5/forecast?lat=' + str(lat_) + '&lon=' + str(lon_) + '&appid=' + key
     response = requests.get(url)
-    
     response_string = response.content.decode("utf-8")
-    
     json_object = json.loads(response_string)
+
+
+    owm = pyowm.OWM(key)  # You MUST provide a valid API key
+    obs = owm.weather_at_coords(lat_, lon_)
+    weather = obs.get_weather()
+
+    results = {
+        "temp": weather.get_temperature('fahrenheit'),
+        "description": weather.get_detailed_status,
+        "json": json_object
+    }
     
-    return json_object
+    return results
     
     
 #return weather_object using pyowm library
@@ -288,7 +297,7 @@ def route():
                     'orig_long': coords[i][1],
                     'index': count,
                     'date': (strp_start_date + datetime.timedelta(days=i/2)).strftime("%m%d%Y") if start_date else '',
-                    'num': i % 2 + 1 # first stop: 1, second stop: 2, each day
+                    'num': i % 2 + 1 if start_date else 0 # first stop: 1, second stop: 2, each day
                     }
 
             sql = "INSERT IGNORE INTO Places(place_id, name, latitude, longitude) VALUES(%s, %s, %s, %s);"
@@ -750,7 +759,7 @@ def go(phone_id):
     sql = 'SELECT ind FROM Routes WHERE phone_id = %s;'
     cur.execute(sql, (phone_id))
     result = cur.fetchone()
-    ind = result['ind']
+    ind = result.ind
 
     cur.close()
     conn.close()
