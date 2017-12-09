@@ -620,7 +620,7 @@ def load(phone_id):
     results["end_date"] = r[3]
     results["budget"] = r[4]
     results["radius"] = r[5]
-    # results["index"] = r[7]
+    results["index"] = r[7]
     results["route_id"] = r[0]
     route_id = r[0]
     
