@@ -707,17 +707,21 @@ def nearby():
     #     max_price = 3
     # else:
     #     max_price = 4
+    rest = 0
 
     if ('lodging' in input):
-        nearby = gmaps.places(location = [lat, long], query = 'hotel', max_price = max_price, open_now = True, radius = 50000) # 5 miles
+        nearby = gmaps.places_nearby(name = "hotel", location = [lat, long], radius = 20000, open_now = True) # 5 miles
     elif ('gas_station' in input):
-        nearby = gmaps.places(location = [lat, long], query = 'gas', max_price = max_price, open_now = True, radius = 50000) # 5 miles
+        nearby = gmaps.places_nearby(name = "gas station", location = [lat, long], radius = 20000, open_now = True) # 5 miles
     elif ('restaurant' in input):
-        nearby = gmaps.places(location = [lat, long], query = 'restaurant', max_price = max_price, open_now = True, radius = 50000) # 5 miles
+        nearby = gmaps.places_nearby(name = "restaurant", location = [lat, long], radius = 20000, open_now = True) # 5 miles
     else:
-        nearby = gmaps.places(location = [lat, long], query = 'rest area', max_price = max_price, open_now = True, radius = 50000) # 5 miles
+        rest = 1
+        nearby = gmaps.places_nearby(name = "truck stop", location = [lat, long], radius = 20000, open_now = True) # 5 miles
 
     results = {
+        'lat': lat,
+        'long': long,
         'places': []
     }
 
@@ -727,9 +731,34 @@ def nearby():
             'name': nearest['name'],
             'latitude': nearest['geometry']['location']['lat'],
             'longitude': nearest['geometry']['location']['lng'],
-            'rating': nearest['rating'] if 'rating' in nearest else 0
+            'rating': nearest['rating'] if 'rating' in nearest else 0,
+            'price': nearest['price_level'] if 'price_level' in nearest else 0,
+            'distance': getPathLength(lat, long, nearest['geometry']['location']['lat'], nearest['geometry']['location']['lng']) * 0.00062137
         }
         results['places'].append(data)
+
+    # return nearby['results']
+
+
+    # This is here because I wanted to search both terms
+    if (rest):
+        nearby = gmaps.places_nearby(name = "rest stop", location = [lat, long], radius = 20000, open_now = True) # 5 miles
+        for i in range(len(nearby['results'])):
+            nearest = nearby['results'][i]
+            gg = 1
+            for place in results['places']:
+                if (place['place_id'] == nearest['place_id']):
+                    gg = 0
+            if (gg):
+                data = {'place_id': nearest['place_id'],
+                        'name': nearest['name'],
+                        'latitude': nearest['geometry']['location']['lat'],
+                        'longitude': nearest['geometry']['location']['lng'],
+                        'rating': nearest['rating'] if 'rating' in nearest else 0,
+                        'price': nearest['price_level'] if 'price_level' in nearest else 0,
+                        'distance': getPathLength(lat, long, nearest['geometry']['location']['lat'], nearest['geometry']['location']['lng']) * 0.00062137
+                        }
+                results['places'].append(data)
 
     return results
 
@@ -748,22 +777,21 @@ def describe():
 
     gmaps = googlemaps.Client(key='AIzaSyD_O6TM3vX-EbHpsSwVu-DPsfCxRar7xJo')
 
-    # request = app.current_request
-    # input = request.json_body
+    request = app.current_request
+    input = request.json_body
 
     results = {
         'reviews': []
     }
 
     # place_id = 'ChIJd8BlQ2BZwokRAFUEcm_qrcA'
-    # desc = gmaps.place(place_id = input['place_id'])
-    place_id = 'ChIJ0UINjLxSk4cR_Bm9JfqOf7M'
-    descJSON = gmaps.place(place_id = place_id)
-    desc = descJSON['result']
+    desc = gmaps.place(place_id = input['place_id'])
+    # place_id = 'ChIJ0UINjLxSk4cR_Bm9JfqOf7M'
+    # descJSON = gmaps.place(place_id = place_id)
 
-    results['name'] = descJSON['result']['name']
-    results['address'] = descJSON['result']['formatted_address']
-    results['rating'] = descJSON['result']['rating']
+    results['name'] = desc['result']['name']
+    results['address'] = desc['result']['formatted_address']
+    results['rating'] = desc['result']['rating']
 
     # For free users, the API only returns up to 5 reviews
     if 'reviews' in desc:
