@@ -44,6 +44,7 @@ def forecast(lat_, lon_):
     # weather of 24 hr , get high and low
     return json_object
     owm = pyowm.OWM(key)  # You MUST provide a valid API key
+
     obs = owm.weather_at_coords(float(lat_),float(lon_))
     weather = obs.get_weather()
 
@@ -655,13 +656,13 @@ def nearby():
     #     max_price = 4
 
     if ('lodging' in input):
-        nearby = gmaps.places_nearby(location = [lat, long], type = 'lodging', max_price = max_price, open_now = True, radius = 50000) # 5 miles
+        nearby = gmaps.places(location = [lat, long], query = 'hotel', max_price = max_price, open_now = True, radius = 50000) # 5 miles
     elif ('gas_station' in input):
-        nearby = gmaps.places_nearby(location = [lat, long], type = 'gas_station', max_price = max_price, open_now = True, radius = 50000) # 5 miles
+        nearby = gmaps.places(location = [lat, long], query = 'gas', max_price = max_price, open_now = True, radius = 50000) # 5 miles
     elif ('restaurant' in input):
-        nearby = gmaps.places_nearby(location = [lat, long], type = 'restaurant', max_price = max_price, open_now = True, radius = 50000) # 5 miles
+        nearby = gmaps.places(location = [lat, long], query = 'restaurant', max_price = max_price, open_now = True, radius = 50000) # 5 miles
     else:
-        nearby = gmaps.places_nearby(keyword = 'reststop', location = [lat, long], max_price = max_price, open_now = True, radius = 50000) # 5 miles
+        nearby = gmaps.places(location = [lat, long], query = 'rest area', max_price = max_price, open_now = True, radius = 50000) # 5 miles
 
     results = {
         'places': []
