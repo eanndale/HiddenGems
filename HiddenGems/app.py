@@ -20,42 +20,90 @@ app.debug = True
 def index():
     return {'hello': 'world'}
 
-#returns 5 day every 3 hour forecast at coordinates
+# New API. Darksky. Better.
 @app.route('/forecast/{lat_}/{lon_}', methods=['GET'])
 def forecast(lat_, lon_):
-    key = "5a61d0979d0298f923b45e24d5cfd6ee"
+    key = "d7a06cf56b5c9a0f1c2abc57d3b8fb09"
 
-    rds_host = 'hiddengemsdb.cp1ydngf7sx0.us-east-1.rds.amazonaws.com'
-    name = 'HiddenGems'
-    password = 'Stargazing1'
-    db_name = 'HiddenGems'
-
+    # # Figure out which stop number this lat/long is
+    # rds_host = 'hiddengemsdb.cp1ydngf7sx0.us-east-1.rds.amazonaws.com'
+    # name = 'HiddenGems'
+    # password = 'Stargazing1'
+    # db_name = 'HiddenGems'
+    #
     # conn = pymysql.connect( host=rds_host, user=name, passwd=password, db=db_name, autocommit=True, connect_timeout=15)
     # cur = conn.cursor()
-
-    # sql = 'SELECT stop_num FROM Stops WHERE lat = %s AND long = %s;'
+    #
+    # sql = 'SELECT place_id FROM Places WHERE latitude = %s AND longitude = %s;'
     # cur.execute(sql, (lat_, lon_))
+    # place = cur.fetchone()
 
-    # Weather at certain time
-    url = 'http://api.openweathermap.org/data/2.5/forecast?lat=' + str(lat_) + '&lon=' + str(lon_) + '&appid=' + key
+    utc = datetime.datetime.utcnow()
+    ts = int(utc.timestamp())
+
+    url = 'https://api.darksky.net/forecast/' + key + '/' + str(lat_) + ',' + str(lon_) + ',' + str(ts) + '?exclude=minutely,hourly'
     response = requests.get(url)
     response_string = response.content.decode("utf-8")
-    json_object = json.loads(response_string)
-    # weather of 24 hr , get high and low
-    return json_object
-    owm = pyowm.OWM(key)  # You MUST provide a valid API key
+    forecast = json.loads(response_string)
 
-    obs = owm.weather_at_coords(float(lat_),float(lon_))
-    weather = obs.get_weather()
+    current = float(forecast['currently']['temperature'])
+    high = float(forecast['daily']['data'][0]['temperatureHigh'])
+    low = float(forecast['daily']['data'][0]['temperatureLow'])
+    summary = forecast['daily']['data'][0]['summary']
+    type = forecast['daily']['data'][0]['icon']
 
     results = {
-        "temp": weather.get_temperature('fahrenheit'),
-        "description": weather.get_detailed_status(),
-        "json": json_object
+        'current': current,
+        'high': high,
+        'low': low,
+        'summary': summary,
+        'type': type,
+        'forecast': forecast
     }
-    
+
     return results
-    
+
+# #returns 5 day every 3 hour forecast at coordinates
+# @app.route('/forecast/{lat_}/{lon_}', methods=['GET'])
+# def forecast(lat_, lon_):
+#     key = "5a61d0979d0298f923b45e24d5cfd6ee"
+#
+#     # Weather every 3 hours for 5 days
+#     url = 'http://api.openweathermap.org/data/2.5/forecast?lat=' + str(lat_) + '&lon=' + str(lon_) + '&appid=' + key
+#     response = requests.get(url)
+#     response_string = response.content.decode("utf-8")
+#     forecast = json.loads(response_string)
+#
+#
+#
+#     # This shit don't work because the free tier doesn't allow for it
+#     # Tentative high + low for location
+#     # url = 'http://api.openweathermap.org/data/2.5/forecast/daily?lat=' + str(lat_) + '&lon=' + str(lon_) + '&appid=' + key
+#     # response = requests.get(url)
+#     # response_string = response.content.decode("utf-8")
+#     # daily = json.loads(response_string)
+#
+#     # Pyowm testing (ignore)
+#     owm = pyowm.OWM(key)  # You MUST provide a valid API key
+#
+#     obs = owm.weather_at_coords(float(lat_),float(lon_))
+#     weather = obs.get_weather()
+#
+#     results = {
+#         'forecast': forecast
+#         # "time": daily['list'][0]['dt'],
+#         # "hi": daily['list'][0]['temp']['max'],
+#         # "lo": daily['list'][0]['temp']['min'],
+#         # "curr": daily['list'][0]['temp']['day'],
+#         # "main": daily['list'][0]['weather'][0]['main'],
+#         # "description": daily['list'][0]['weather'][0]['description'],
+#         # "temp": weather.get_temperature('fahrenheit'),
+#         # "description": weather.get_detailed_status(),
+#         # "json": forecast
+#     }
+#
+#     return results
+#
     
 #return weather_object using pyowm library
 def get_weather_object(lat_, lon_):
