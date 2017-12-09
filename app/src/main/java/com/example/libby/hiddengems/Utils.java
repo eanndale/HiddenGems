@@ -1,18 +1,18 @@
 package com.example.libby.hiddengems;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
-import com.google.gson.Gson;
+import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
@@ -23,9 +23,8 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Map;
 
 /**
  * Created by zaaron on 11/11/2017.
@@ -34,6 +33,8 @@ import java.util.Map;
 public class Utils {
     static boolean sending;
     static boolean mapReady;
+    static boolean isDriving=false;
+    static int betweenLoc=0;
     static ArrayList<StopInfo> arra = new ArrayList<>();
     private static MapsActivity ma;
 
@@ -95,7 +96,7 @@ public class Utils {
 
         //Handles what is returned from the page
         ResponseHandler responseHandler = new BasicResponseHandler();
-        Log.i("Params", params);
+        Log.i("Path", path + params);
 
         String str = (String) httpclient.execute(httpost, responseHandler);
         if(str != null)
@@ -106,11 +107,23 @@ public class Utils {
     public static String jsonToUrl(JSONObject json) {
         StringBuilder ret = new StringBuilder("");
         try {
-            for (Iterator<String> s = json.keys(); s.hasNext(); ) {
-                String key = s.next();
-                String ans = "/" + key + "/" + json.getString(key);
-                ret.append(ans);
-//                ret += "/" + json.getString(key);
+//            for (Iterator<String> s = json.keys(); s.hasNext(); ) {
+//                String key = s.next();
+//                String ans = "/" + key + "/" + json.getString(key);
+//                ret.append(ans);
+////                ret += "/" + json.getString(key);
+//            }
+            if(json.has("phone_id")) {
+                ret.append("/");
+                ret.append(json.getString("phone_id"));
+            }
+            if(json.has("lat")) {
+                ret.append("/");
+                ret.append(json.getDouble("lat"));
+            }
+            if(json.has("lng")) {
+                ret.append("/");
+                ret.append(json.getDouble("lng"));
             }
         }
         catch (Exception e) {
@@ -119,29 +132,183 @@ public class Utils {
         return ret.toString();
     }
 
-    public static class sendSave extends AsyncTask<String, Void, String> {
+    public static class sendGo extends AsyncTask<JSONObject, Void, Integer> {
+        private final WeakReference<DriveActivity> driveActivity;
+        sendGo(DriveActivity d) {
+            driveActivity = new WeakReference<DriveActivity>(d);
+        }
+        @Override
+        protected Integer doInBackground(JSONObject[] maps) {
+            try {
+                JSONObject rsp = Utils.getRequest("https://105yog30qc.execute-api.us-east-1.amazonaws.com/api/go", jsonToUrl(maps[0]));
+                if (rsp.has("ind")) {
+                    return rsp.getInt("ind");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return -1;
+        }
 
+        @Override
+        protected void onPostExecute(Integer res) {
+            if (res != -1 && driveActivity.get() != null) {
+                driveActivity.get().updateCurrent(res);
+            }
+        }
+    }
+
+    public static class sendArrive extends AsyncTask<JSONObject, Void, Integer> {
+//        private final WeakReference<DriveActivity> da;
+//        public sendArrive(DriveActivity d) {
+//            da = new WeakReference<DriveActivity>(d);
+//        }
+
+        @Override
+        protected Integer doInBackground(JSONObject[] maps) {
+            try {
+                JSONObject rsp = Utils.getRequest("https://105yog30qc.execute-api.us-east-1.amazonaws.com/api/arrive", jsonToUrl(maps[0]));
+                if (rsp.has("ind")) {
+                    return rsp.getInt("ind");
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return -1;
+        }
+
+//        @Override
+//        protected void onPostExecute(Integer result) {
+//            if (result != -1 && da.get() != null) {
+//                da.get().updateCurrent(result);
+//            }
+//        }
+
+    }
+    public static class sendSave extends AsyncTask<String, Void, String> {
+        private WeakReference<MapsActivity> context;
+        private boolean sayGo;
+        sendSave(MapsActivity c) {
+            this(c, false);
+        }
+        sendSave(MapsActivity c, boolean b) {
+            context = new WeakReference<MapsActivity>(c);
+            sayGo = b;
+        }
         @Override
         protected String doInBackground(String[] maps) {
             try {
                 JSONObject rsp = Utils.makeRequest("https://105yog30qc.execute-api.us-east-1.amazonaws.com/api/route/save", maps[0]);
+                if(!sayGo && rsp.has("done") && context.get() != null) {
+                    context.get().toastSave();
+                }
+                else if(sayGo) {
+                    return "go";
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
             return null;
         }
+        @Override
+        protected void onPostExecute(String result) {
+            if (result != null) {
+                if (context.get() != null) {
+                    context.get().driveBaby();
+                }
+            }
+        }
     }
 
-    public static class sendLoad extends AsyncTask<String, Void, String> {
+    public static class sendLoad extends AsyncTask<JSONObject, Void, JSONObject> {
+        private final WeakReference<PlaceAutocompleteFragment> start_frag;
+        private final WeakReference<PlaceAutocompleteFragment> end_frag;
+        private final WeakReference<EditText> start_date;
+        private final WeakReference<EditText> end_date;
+        private final WeakReference<MainActivity> main;
+
+        public sendLoad(PlaceAutocompleteFragment start_frag, PlaceAutocompleteFragment end_frag,
+                        EditText start_date, EditText end_date, MainActivity main) {
+            this.start_frag = new WeakReference<PlaceAutocompleteFragment>(start_frag);
+            this.end_frag = new WeakReference<PlaceAutocompleteFragment>(end_frag);
+            this.start_date = new WeakReference<EditText>(start_date);
+            this.end_date = new WeakReference<EditText>(end_date);
+            this.main = new WeakReference<MainActivity>(main);
+        }
 
         @Override
-        protected String doInBackground(String[] maps) {
+        protected JSONObject doInBackground(JSONObject[] maps) {
             try {
-                JSONObject rsp = Utils.makeRequest( "https://105yog30qc.execute-api.us-east-1.amazonaws.com/api/route/load", maps[0]);
+                JSONObject rsp = Utils.getRequest( "https://105yog30qc.execute-api.us-east-1.amazonaws.com/api/route/load", jsonToUrl(maps[0]));
+                return rsp;
             } catch (Exception e) {
-                Log.e("load", e.getStackTrace().toString());
+                e.printStackTrace();
             }
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(JSONObject result) {
+            if (result != null) {
+                Log.i("LOAD RETURN", result.toString());
+                try {
+                    if (result.has("budget")) {
+                        Preferences.setBudget(result.getDouble("budget"));
+                    }
+                    if (result.has("radius")) {
+                        Preferences.setDetourRadius(result.getInt("radius"));
+                    }
+                    if (result.has("keywords")) {
+                        Preferences.attractionList = new ArrayList<>();
+                        JSONArray ja = result.getJSONArray("keywords");
+                        for (int i = 0; i < ja.length(); ++i) {
+                            Preferences.addAttraction(ja.getString(i));
+                        }
+                    }
+                    if (result.has("places")) {
+                        arra = new ArrayList<>();
+                        JSONArray ja = result.getJSONArray("places");
+                        for(int i = 0; i < ja.length(); i++) {
+                            JSONObject m = ja.getJSONObject(i);
+                            if (i == 0 && start_frag.get() != null) {
+                                start_frag.get().setText(m.getString("name"));
+                            }
+                            else if(i == ja.length()-1 && end_frag.get() != null) {
+                                end_frag.get().setText(m.getString("name"));
+                            }
+                            arra.add(new StopInfo(
+                                    m.getString("name"),
+                                    m.getString("place_id"),
+                                    m.getDouble("rating"),
+                                    m.getDouble("latitude"),
+                                    m.getDouble("longitude"),
+                                    m.getDouble("orig_latitude"),
+                                    m.getDouble("orig_longitude"),
+                                    arra.size(),
+                                    m.getString("stop_date")
+//                                ,
+//                                m.getString("forecast")
+                            ));
+                        }
+                    }
+                    if (result.has("start_date") &&
+                            !result.getString("start_date").equals("") &&
+                            start_date.get() != null) {
+                        start_date.get().setText(result.getString("start_date"));
+                    }
+                    if (result.has("end_date") &&
+                            !result.getString("end_date").equals("") &&
+                            end_date.get() != null) {
+                        end_date.get().setText(result.getString("end_date"));
+                    }
+                    if (result.has("index") && result.getInt("index") > 0) {
+                        main.get().loadRoute(result.getInt("index"));
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -151,9 +318,9 @@ public class Utils {
         @Override
         protected String doInBackground(String[] maps) {
             try {
-                JSONObject rsp = Utils.makeRequest( "https://105yog30qc.execute-api.us-east-1.amazonaws.com/api/route/load", maps[0]);
+                JSONObject rsp = Utils.makeRequest( "https://105yog30qc.execute-api.us-east-1.amazonaws.com/api/nearby", maps[0]);
             } catch (Exception e) {
-                Log.e("nearby", e.getStackTrace().toString());
+                e.printStackTrace();
             }
             return null;
         }
@@ -167,12 +334,24 @@ public class Utils {
             try {
                 Log.e("FIRST", maps[0].getPlaceId());
                 JSONObject j = new JSONObject()
+                        .put("phone_id", Preferences.getAndroidId())
                         .put("name", maps[0].getName())
                         .put("place_id", maps[0].getPlaceId())
                         .put("orig_lat", maps[0].getOrig_lat())
                         .put("orig_long", maps[0].getOrig_long())
-                        .put("index", maps[0].getIndex());
-                JSONObject rsp = Utils.makeRequest("https://105yog30qc.execute-api.us-east-1.amazonaws.com/api/update", j.toString());
+                        .put("index", maps[0].getIndex())
+                        .put("radius", Preferences.getDetourRadius())
+                        .put("budget", Preferences.getBudget());
+                ArrayList<String> userPrefList = Preferences.attractionList;
+                if (userPrefList.isEmpty()) {
+                    userPrefList.add("attractions");
+                    j.put("keywords", userPrefList);
+                }
+                else {
+                    j.put("keywords", userPrefList);
+                }
+                JSONObject rsp = Utils.makeRequest("https://105yog30qc.execute-api.us-east-1.amazonaws.com/api/replace", j.toString());
+
                 Log.e("SECOND", rsp.getString("place_id"));
                 arra.add(maps[0].getIndex(),
                         new StopInfo(
@@ -183,7 +362,8 @@ public class Utils {
                         rsp.getDouble("longitude"),
                         rsp.getDouble("orig_lat"),
                         rsp.getDouble("orig_long"),
-                        maps[0].getIndex()
+                        maps[0].getIndex(),
+                        rsp.getString("date")
 //                                ,
 //                        rsp.getString("forecast")
                         ));
@@ -213,15 +393,6 @@ public class Utils {
                     Log.e("json", rsp.get("places").toString());
                     JSONArray ja = rsp.getJSONArray("places");
                     arra = new ArrayList<>();
-//                    arra.add(new StopInfo(
-//                            "Start",
-//                            null,
-//                            0.0,
-//                            Double.valueOf(maps[0].get("start_lat").toString()),
-//                            Double.valueOf(maps[0].get("start_long").toString()),
-//                            0.0,
-//                            0.0,
-//                            0));
                     for(int i = 0; i < ja.length(); i++) {
                         JSONObject m = ja.getJSONObject(i);
                         arra.add(new StopInfo(
@@ -232,20 +403,12 @@ public class Utils {
                                 m.getDouble("longitude"),
                                 m.getDouble("orig_lat"),
                                 m.getDouble("orig_long"),
-                                m.getInt("index")
+                                m.getInt("index"),
+                                m.getString("date")
 //                                ,
 //                                m.getString("forecast")
                                 ));
                     }
-//                    arra.add(new StopInfo(
-//                            "End",
-//                            null,
-//                            0.0,
-//                            Double.valueOf(maps[0].get("end_lat").toString()),
-//                            Double.valueOf(maps[0].get("end_long").toString()),
-//                            0.0,
-//                            0.0,
-//                            arra.size()));
                 }
                 else {
                     Log.e("json", " return was null");

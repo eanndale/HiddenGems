@@ -28,10 +28,13 @@ import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.akexorcist.googledirection.model.Route;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
+
+import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -45,12 +48,13 @@ public class MainActivity extends AppCompatActivity {
     private SimpleDateFormat dateFormatter;
     private EditText startDate;
     private EditText endDate;
+    private MainActivity main;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        main = this;
         dateFormatter = new SimpleDateFormat("mm-dd-yyyy", Locale.US);
 
         if(!Preferences.isInited()) {
@@ -91,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
             startDate.setText(Preferences.getStartDate());
         }
 
-        PlaceAutocompleteFragment endFragment = (PlaceAutocompleteFragment)
+        final PlaceAutocompleteFragment endFragment = (PlaceAutocompleteFragment)
                 getFragmentManager().findFragmentById(R.id.end_autocomplete_fragment);
         endFragment.setHint("End Location *");
         if (Preferences.getEndLoc() != null) {
@@ -164,14 +168,30 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        Button butt = (Button) findViewById(R.id.preference_main);
-        butt.setOnClickListener(new View.OnClickListener() {
+        Button preferences = (Button) findViewById(R.id.preference_main);
+        preferences.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getApplicationContext(), RouteActivity.class);
+                RouteActivity.goMain = true;
                 startActivity(intent);
             }
         });
+
+        Button load = (Button) findViewById(R.id.load_main);
+        load.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                JSONObject json = new JSONObject();
+                try {
+                    json.put("phone_id", Preferences.getAndroidId());
+                    new Utils.sendLoad(startFragment, endFragment, startDate, endDate, main).execute(json);
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        checkPermissions();
     }
 
     private boolean checkDate(String s) {
@@ -193,7 +213,7 @@ public class MainActivity extends AppCompatActivity {
         //NOTE ADD PERMISSIONS if necessary
         ArrayList<String> permissions = new ArrayList<>();
         permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
-        permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
+//        permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
         permissions.add(Manifest.permission.ACCESS_NETWORK_STATE);
         permissions.add(Manifest.permission.INTERNET);
 
@@ -209,6 +229,18 @@ public class MainActivity extends AppCompatActivity {
             return false;
         }
         return true;
+    }
+
+    public void loadRoute(int index) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Intent intent = new Intent(getApplicationContext(), DriveActivity.class);
+                intent.putExtra("firsttime", false);
+                startActivity(intent);
+            }
+        });
+
     }
 
     @Override

@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class RouteActivity extends AppCompatActivity {
+    static boolean goMain = true;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,9 +54,15 @@ public class RouteActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Preferences.setBudget(Double.parseDouble(budgetSpace.getText().toString()));
                 Preferences.setDetourRadius(seekBar.getProgress());
-
-                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                startActivity(intent);
+                if(goMain) {
+                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                    startActivity(intent);
+                }
+                else {
+                    Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
+                    intent.putExtra("back", true);
+                    startActivity(intent);
+                }
             }
         });
 

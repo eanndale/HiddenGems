@@ -6,8 +6,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginEnd="48dp"
-        android:layout_marginStart="48dp"
+        android:layout_marginEnd="40dp"
+        android:layout_marginStart="40dp"
         android:orientation="horizontal">
 
         <LinearLayout
@@ -18,58 +18,155 @@
             <Space
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight=".25" />
+                android:layout_weight=".125" />
 
-            <LinearLayout
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="horizontal">
+                android:layout_height="0dp"
+                android:layout_weight="1.5">
 
-                <LinearLayout
+                <TextView
+                    android:id="@+id/current_header"
+                    android:layout_width="130dp"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:text="Going to"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/current_dest"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_alignEnd="@+id/current_header"
+                    android:layout_alignParentStart="true"
+                    android:layout_below="@+id/current_header"
+                    android:maxLines="2"
+                    android:text="TextView" />
+
+                <ImageView
+                    android:id="@+id/current_weather"
                     android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="4dp"
+                    android:layout_toStartOf="@+id/weather_label"
+                    app:srcCompat="@drawable/autumn" />
 
-                    <ImageView
-                        android:id="@+id/imageView"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        app:srcCompat="@drawable/button" />
-
-                    <TextView
-                        android:id="@+id/textView"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="TextView" />
-
-                    <Button
-                        android:id="@+id/button3"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Button" />
-                </LinearLayout>
-
-                <Space
+                <Button
+                    android:id="@+id/current_routing"
                     android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1" />
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:text="Arrived" />
 
-                <LinearLayout
+                <TextView
+                    android:id="@+id/current_hilo"
+                    android:layout_width="18dp"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:text="Hi Lo" />
+
+                <TextView
+                    android:id="@+id/current_high"
                     android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:orientation="vertical"></LinearLayout>
-            </LinearLayout>
+                    android:layout_height="wrap_content"
+                    android:layout_alignTop="@+id/current_hilo"
+                    android:layout_toEndOf="@+id/current_hilo"
+                    android:text="100" />
+
+                <TextView
+                    android:id="@+id/current_low"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/current_hilo"
+                    android:layout_toEndOf="@+id/current_hilo"
+                    android:text="100" />
+
+                <TextView
+                    android:id="@+id/next_header"
+                    android:layout_width="130dp"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentTop="true"
+                    android:text="Next Stop"
+                    android:textAlignment="textEnd"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/next_dest"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignStart="@+id/next_header"
+                    android:layout_below="@+id/next_header"
+                    android:maxLines="2"
+                    android:text="TextView"
+                    android:textAlignment="textEnd" />
+
+                <Button
+                    android:id="@+id/next_routing"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBaseline="@+id/current_routing"
+                    android:layout_alignBottom="@+id/current_routing"
+                    android:layout_alignParentEnd="true"
+                    android:text="Go!" />
+
+                <ImageView
+                    android:id="@+id/next_weather"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignTop="@+id/current_weather"
+                    android:layout_marginStart="4dp"
+                    android:layout_toEndOf="@+id/weather_label"
+                    app:srcCompat="@drawable/clouds" />
+
+                <TextView
+                    android:id="@+id/weather_label"
+                    android:layout_width="110dp"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBaseline="@+id/next_high"
+                    android:layout_alignBottom="@+id/next_high"
+                    android:layout_centerHorizontal="true"
+                    android:textAlignment="center" />
+
+                <TextView
+                    android:id="@+id/next_hilo"
+                    android:layout_width="18dp"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:text="Hi Lo"
+                    android:textAlignment="textEnd" />
+
+                <TextView
+                    android:id="@+id/next_high"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBaseline="@+id/next_hilo"
+                    android:layout_alignBottom="@+id/next_hilo"
+                    android:layout_toStartOf="@+id/next_hilo"
+                    android:text="100"
+                    android:textAlignment="textEnd" />
+
+                <TextView
+                    android:id="@+id/next_low"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBaseline="@+id/current_low"
+                    android:layout_alignBottom="@+id/current_low"
+                    android:layout_alignStart="@+id/next_high"
+                    android:text="100"
+                    android:textAlignment="textEnd" />
+
+            </RelativeLayout>
 
             <Space
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight=".25" />
+                android:layout_weight=".125" />
 
             <Button
                 android:id="@+id/rest_drive"
