@@ -595,15 +595,14 @@ def load(phone_id):
         place_id = row1[1]
         for row2 in r2:
             if row2[0] == place_id:
-                if row1[3]:
-                    date = row1[3].strftime("%m%d%Y") 
-                else:
-                    date = ""
+                #     date = ""
+                # if row1[3]:
+                #     date = row1[3].strftime("%m%d%Y") 
 
                 tempDict = {
                     "place_id" : place_id,
                     "name" : row2[1],
-                    "stop_date" : date,
+                    "stop_date" : row1[5].strftime("%m%d%Y"),
                     "orig_latitude" : row1[3],
                     "orig_longitude" : row1[4],
                     "latitude" : row2[2],
