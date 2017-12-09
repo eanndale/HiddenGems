@@ -580,7 +580,7 @@ def load(phone_id):
     sql.execute("SELECT keyword FROM Keywords WHERE route_id = (%s);", (route_id))
     r = sql.fetchall()
     for keyword in r:
-         results["keywords"].append(r[i])
+        results["keywords"].append(keyword[0])
 
     # #place: 
     # # long, lat, 
