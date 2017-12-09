@@ -231,13 +231,23 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    public void loadRoute(int index) {
+    public void loadRoute(final int index) {
         runOnUiThread(new Runnable() {
+//            int final index;
+
             @Override
             public void run() {
-                Intent intent = new Intent(getApplicationContext(), DriveActivity.class);
-                intent.putExtra("firsttime", false);
-                startActivity(intent);
+                if (index > 0) {
+                    Intent intent = new Intent(getApplicationContext(), DriveActivity.class);
+                    intent.putExtra("firsttime", false);
+                    intent.putExtra("index", index);
+                    startActivity(intent);
+                }
+                else {
+                    Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
+                    intent.putExtra("back", true);
+                    startActivity(intent);
+                }
             }
         });
 

@@ -526,7 +526,7 @@ def save():
     sql.execute("INSERT IGNORE INTO Users (phone_id) VALUES (%s);", (phone_id))
     
     sql = conn.cursor()
-    sql.execute( "REPLACE INTO Routes (phone_id, start_date, end_date, budget, radius) VALUES (%s, %s, %s, %s, %s);", (phone_id, start_date, end_date, budget, radius)) 
+    sql.execute( "REPLACE INTO Routes (phone_id, start_date, end_date, budget, radius, ind) VALUES (%s, %s, %s, %s, %s, %d);", (phone_id, start_date, end_date, budget, radius, 0))
     
    
     sql = conn.cursor()
@@ -622,7 +622,7 @@ def load(phone_id):
     results["end_date"] = r[3]
     results["budget"] = r[4]
     results["radius"] = r[5]
-    # results["index"] = r[7]
+    results["index"] = r[7]
     results["route_id"] = r[0]
     route_id = r[0]
     
