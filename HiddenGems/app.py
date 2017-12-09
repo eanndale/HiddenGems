@@ -547,7 +547,7 @@ def save():
         # index = stops[i]["index"]
         place_id = stops[i]['placeid']
         stop_num = stops[i]["stop_num"] if "stop_num" in stops[i] else ""
-        stop_date = stops[i]['stop_date'] if 'stop_date' in stops[i] else ""
+        stop_date = stops[i]['date'] if 'date' in stops[i] else ""
         # stopDate = stop_date.strftime("%m%d%Y") if 'stop_date' in stops[i] else ""
         name = stops[i]['name']
         rating = stops[i]['rating']
@@ -668,7 +668,7 @@ def load(phone_id):
                 tempDict = {
                     "place_id" : place_id,
                     "name" : row2[1],
-                    "stop_date" : row1[5] if row1[5] else "",
+                    "date" : row1[5] if row1[5] else "",
                     "orig_latitude" : row1[3],
                     "orig_longitude" : row1[4],
                     "latitude" : row2[2],
