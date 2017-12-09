@@ -625,6 +625,7 @@ def load(phone_id):
 
     sql.close()
     sql2.close()
+    assert(false)
     conn.close()
     return results
 
