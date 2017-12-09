@@ -30,21 +30,22 @@ def forecast(lat_, lon_):
     password = 'Stargazing1'
     db_name = 'HiddenGems'
 
-    conn = pymysql.connect( host=rds_host, user=name, passwd=password, db=db_name, autocommit=True, connect_timeout=15)
-    cur = conn.cursor()
+    # conn = pymysql.connect( host=rds_host, user=name, passwd=password, db=db_name, autocommit=True, connect_timeout=15)
+    # cur = conn.cursor()
 
     # sql = 'SELECT stop_num FROM Stops WHERE lat = %s AND long = %s;'
-    # cur.execute(sql, (phone_id))
+    # cur.execute(sql, (lat_, lon_))
 
     # Weather at certain time
     url = 'http://api.openweathermap.org/data/2.5/forecast?lat=' + str(lat_) + '&lon=' + str(lon_) + '&appid=' + key
     response = requests.get(url)
     response_string = response.content.decode("utf-8")
     json_object = json.loads(response_string)
-
-
+    # weather of 24 hr , get high and low
+    return json_object
     owm = pyowm.OWM(key)  # You MUST provide a valid API key
-    obs = owm.weather_at_coords(float(lat_), float(lon_))
+
+    obs = owm.weather_at_coords(float(lat_),float(lon_))
     weather = obs.get_weather()
 
     results = {
@@ -79,24 +80,24 @@ def get_weather_object(lat_, lon_):
 
     return weather
 
-#return the temperature in fahrenheit
+#return the temperature in fahrenheit (JSON)
 @app.route('/temperature/{lat_}/{lon_}', methods=['GET'])
 def get_temperature(lat_, lon_):
-    weather_object = get_weather_object(lat_,lon_)
+    weather_object = get_weather_object(float(lat_),float(lon_))
     
     return weather_object.get_temperature('fahrenheit')
 
-#return the weather description: eg couldy, rainy 
+#return the weather description: eg couldy, rainy (STRING)
 @app.route('/status/{lat_}/{lon_}', methods=['GET'])
 def get_status(lat_,lon_):
     weather_object = get_weather_object(float(lat_),float(lon_))
     
     return weather_object.get_status()
 
-#return a detailed weather description: eg broken clouds
+#return a detailed weather description: eg broken clouds (STRING)
 @app.route('/detailed_status/{lat_}/{lon_}', methods=['GET'])
 def get_detailed_status(lat_,lon_):
-    weather_object = get_weather_object(lat_,lon_)
+    weather_object = get_weather_object(float(lat_),float(lon_))
     
     return weather_object.get_detailed_status()
     
@@ -505,7 +506,7 @@ def save():
         sql = conn.cursor()
         # sql.execute("INSERT INTO Stops(route_id, place_id, stop_id, stop_date, orig_latitude, orig_longitude) VALUES (?,?,?,?,?,?);", (route_id, place_id, i, stop_date, orig_lat, orig_long))
         # sql.execute("INSERT INTO Stops(route_id, place_id, stop_id, orig_latitude, orig_longitude) VALUES (%s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE place_id '" + place_id + "' or;", (route_id, place_id, stop_id, orig_lat, orig_long))
-        sql.execute("REPLACE INTO Stops(route_id, place_id, stop_id, orig_latitude, orig_longitude, stop_date, stop_num) VALUES (%s, %s, %s, %s, %s, %s, %s);", (route_id, place_id, stop_id, orig_lat, orig_long, stopDate, stop_num))
+        sql.execute("REPLACE INTO Stops(route_id, place_id, stop_id, orig_latitude, orig_longitude, stop_date, stop_num) VALUES (%s, %s, %s, %s, %s, %s, %s);", (route_id, place_id, stop_id, orig_lat, orig_long, stop_date, stop_num))
 
     done = {
         'done': 'true'
