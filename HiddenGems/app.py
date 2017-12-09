@@ -623,7 +623,7 @@ def load(phone_id):
                     "orig_longitude" : row1[4],
                     "latitude" : row2[2],
                     "longitude" : row2[3],
-                    "rating": desc["rating"] if "rating" in desc else ""
+                    "rating": desc["rating"] if "rating" in desc else 0
                 }
                 break
         results["places"].append(tempDict)
