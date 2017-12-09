@@ -12,6 +12,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TabHost;
+import android.widget.Toast;
 
 import com.akexorcist.googledirection.DirectionCallback;
 import com.akexorcist.googledirection.GoogleDirection;
@@ -60,11 +61,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private int radius;
     private double priceRange;
     private ArrayList<String> userPrefList;
+    static MapsActivity maps;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Utils.init(this);
         context = getApplicationContext();
+        maps = this;
         //UPdate: preferences is a window before map activity
 //        startPlace = (Place) getIntent().getParcelableExtra("start");
 //        endPlace = (Place) getIntent().getParcelableExtra("end");
@@ -149,6 +152,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getApplicationContext(), RouteActivity.class);
+                RouteActivity.goMain = false;
                 startActivity(intent);
             }
         });
@@ -157,8 +161,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         d.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), DriveActivity.class);
-                startActivity(intent);
+                SaveInfo save = new SaveInfo();
+                Gson gson = new Gson();
+                Type type = new TypeToken<SaveInfo>() {}.getType();
+                String jj = gson.toJson(save, type);
+
+                new Utils.sendSave(maps, true).execute(jj);
             }
         });
 
@@ -174,7 +182,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     Type type = new TypeToken<SaveInfo>() {}.getType();
                     String jj = gson.toJson(save, type);
 
-                    new Utils.sendSave().execute(jj);
+                    new Utils.sendSave(maps).execute(jj);
                     Log.i("gson", jj);
 //                    Log.i("json", save.toString());
                 }
@@ -303,8 +311,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void reset(){
         Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
         startActivity(intent);
-
     }
+
+    public void toastSave() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(getApplicationContext(), "Saved", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    public void driveBaby() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Intent intent = new Intent(getApplicationContext(), DriveActivity.class);
+                intent.putExtra("firsttime", true);
+                startActivity(intent);
+            }
+        });
+    }
+
 
     //NOT USED BELOW
     public class StopInfoDirectionCallback implements DirectionCallback {

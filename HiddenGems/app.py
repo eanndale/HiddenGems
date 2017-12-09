@@ -593,7 +593,7 @@ def load(phone_id):
         "start_date":"",
         "end_date":"",
         "radius": 10,
-        "index": 0,
+        # "index": 0,
         "isDriving": 'false'
     }
     
@@ -620,7 +620,7 @@ def load(phone_id):
     results["end_date"] = r[3]
     results["budget"] = r[4]
     results["radius"] = r[5]
-    results["index"] = r[7]
+    # results["index"] = r[7]
     results["route_id"] = r[0]
     route_id = r[0]
     
@@ -657,6 +657,8 @@ def load(phone_id):
         place_id = row1[1]
         for row2 in r2:
             if row2[0] == place_id:
+                descJSON = gmaps.place(place_id = place_id)
+                desc = descJSON['result']
                 #     date = ""
                 # if row1[3]:
                 #     date = row1[3].strftime("%m%d%Y") 
@@ -668,7 +670,8 @@ def load(phone_id):
                     "orig_latitude" : row1[3],
                     "orig_longitude" : row1[4],
                     "latitude" : row2[2],
-                    "longitude" : row2[3]
+                    "longitude" : row2[3],
+                    "rating": desc["rating"] if "rating" in desc else 0
                 }
                 break
         results["places"].append(tempDict)

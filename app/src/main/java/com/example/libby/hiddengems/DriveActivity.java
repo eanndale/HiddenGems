@@ -1,9 +1,20 @@
 package com.example.libby.hiddengems;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Rect;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -11,7 +22,17 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResult;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -22,12 +43,65 @@ import org.json.JSONObject;
  */
 
 public class DriveActivity extends AppCompatActivity {
+    static boolean firstTime = false;
+    static DriveActivity da;
+    static GoogleApiClient locClient;
+    static Location mLastLocation;
+    private final LocationListener mLocationListener = new LocationListener() {
+        @Override
+        public void onLocationChanged(final Location location) {
+            mLastLocation = location;
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+
+        }
+    };
+    private LocationManager mLocationManager;
+
+    private final long LOCATION_REFRESH_TIME = 5*60*1000; //minimum time between in milliseconds
+    private final float LOCATION_REFRESH_DISTANCE = 8046.72f;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_drive);
         Preferences.setAndroidId(Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID));
+        da = this;
+        mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, LOCATION_REFRESH_TIME, LOCATION_REFRESH_DISTANCE, mLocationListener);
+        }
+//        locCallBack lcb = new locCallBack();
+//        locClient = new GoogleApiClient.Builder(lcb)
+//                .addConnectionCallbacks(lcb)
+//                .addOnConnectionFailedListener(lcb)
+//                .addApi(LocationServices.API).build();
+        firstTime = getIntent().getBooleanExtra("firsttime", false);
 
+        //Get info
+        if (firstTime) {
+            JSONObject json = new JSONObject();
+            try {
+                json.put("phone_id", Preferences.getAndroidId());
+                new Utils.sendGo(this).execute(json);
+            } catch (Exception e) {
+                Log.e("from map, drive", e.getStackTrace().toString());
+            }
+        }
+
+        //Rest Stop
         Button stuff_btn = findViewById(R.id.rest_drive);
         stuff_btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -36,12 +110,16 @@ public class DriveActivity extends AppCompatActivity {
                 try {
                     json.put("budget", Preferences.getBudget());
                     json.put("reststop", "true");
+                    json.put("lat", mLastLocation.getLatitude());
+                    json.put("long", mLastLocation.getLongitude());
                 } catch (Exception e) {
                     Log.e("reststop", e.getStackTrace().toString());
                 }
                 new Utils.sendNearby().execute(json.toString());
             } }
         );
+
+        //Food
         Button food_btn = findViewById(R.id.food_drive);
         food_btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -50,12 +128,16 @@ public class DriveActivity extends AppCompatActivity {
                 try {
                     json.put("budget", Preferences.getBudget());
                     json.put("restaurant", "true");
+                    json.put("lat", mLastLocation.getLatitude());
+                    json.put("long", mLastLocation.getLongitude());
                 } catch (Exception e) {
                     Log.e("food", e.getStackTrace().toString());
                 }
                 new Utils.sendNearby().execute(json.toString());
             } }
         );
+
+        //Gas
         Button gas_btn = findViewById(R.id.gas_drive);
         gas_btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -64,12 +146,16 @@ public class DriveActivity extends AppCompatActivity {
                 try {
                     json.put("budget", Preferences.getBudget());
                     json.put("gas_station", "true");
+                    json.put("lat", mLastLocation.getLatitude());
+                    json.put("long", mLastLocation.getLongitude());
                 } catch (Exception e) {
                     Log.e("gas", e.getStackTrace().toString());
                 }
                 new Utils.sendNearby().execute(json.toString());
             } }
         );
+
+        //hotel
         Button hotel_btn = findViewById(R.id.lodging_drive);
         hotel_btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -78,6 +164,8 @@ public class DriveActivity extends AppCompatActivity {
                 try {
                     json.put("budget", Preferences.getBudget());
                     json.put("lodging", "true");
+                    json.put("lat", mLastLocation.getLatitude());
+                    json.put("long", mLastLocation.getLongitude());
                 } catch (Exception e) {
                     Log.e("lodging", e.getStackTrace().toString());
                 }
@@ -85,7 +173,82 @@ public class DriveActivity extends AppCompatActivity {
             } }
         );
 
+        if(firstTime) {
+            firstTime = false;
+            StopInfo si = Utils.arra.get(0);
+            StringBuilder s = new StringBuilder();
+            s.append("google.navigation:q=");
+            s.append(si.latitude);
+            s.append(",");
+            s.append(si.longitude);
+            Uri gmmIntentUri = Uri.parse(s.toString());
+            Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+            mapIntent.setPackage("com.google.android.apps.maps");
+            startActivity(mapIntent);
+        }
     }
+
+    public void updateCurrent(int index) {
+        StopInfo curr = Utils.arra.get(index);
+        TextView curr_view = (TextView)findViewById(R.id.current_dest);
+        curr_view.setText(curr.getName());
+        Button curr_button = (Button)findViewById(R.id.current_routing);
+        curr_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                JSONObject json = new JSONObject();
+                try {
+                    json.put("phone_id", Preferences.getAndroidId());
+                    new Utils.sendArrive().execute(json);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        TextView next_view = (TextView)findViewById(R.id.next_dest);
+        Button next_button = (Button)findViewById(R.id.next_routing);
+        if(Utils.arra.size() != index+1) {
+            StopInfo next = Utils.arra.get(index + 1);
+            next_view.setText(next.getName());
+            next_button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    JSONObject json = new JSONObject();
+                    try {
+                        json.put("phone_id", Preferences.getAndroidId());
+                        new Utils.sendGo(da).execute(json);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            //TODO SendWeather update
+//            updateWeather(index, true);
+        }
+        else {
+            next_view.setText("No more locs");
+            next_button.setOnClickListener(null);
+            updateWeather(index, false);
+        }
+    }
+
+    public void updateWeather(int index, boolean hasNext) {
+        TextView curr_high = (TextView)findViewById(R.id.current_high);
+        TextView curr_low = (TextView)findViewById(R.id.current_low);
+
+        TextView next_high = (TextView)findViewById(R.id.next_high);
+        TextView next_low = (TextView)findViewById(R.id.next_low);
+        if (!hasNext) {
+            next_high.setText("-");
+            next_low.setText("-");
+        }
+        else {
+
+        }
+
+    }
+
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
@@ -102,4 +265,56 @@ public class DriveActivity extends AppCompatActivity {
         }
         return super.dispatchTouchEvent( event );
     }
+
+
+
+//    private class locCallBack extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,ActivityCompat.OnRequestPermissionsResultCallback{
+//
+//        @Override
+//        public void onConnected(@Nullable Bundle bundle) {
+//            LocationRequest mLocationRequest = new LocationRequest();
+//            mLocationRequest.setInterval(10000);
+//            mLocationRequest.setFastestInterval(5000);
+//            mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+//
+//            LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
+//                    .addLocationRequest(mLocationRequest);
+//
+//            PendingResult<LocationSettingsResult> result =
+//                    LocationServices.SettingsApi.checkLocationSettings(locClient, builder.build());
+//
+//            if (checkPlayServices() && ContextCompat.checkSelfPermission(DriveActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+//                Log.i("LOC", "EXCITING NEW LOC");
+//                mLastLocation = LocationServices.FusedLocationApi.getLastLocation(locClient);
+//            }
+//        }
+//
+//        @Override
+//        public void onConnectionSuspended(int i) {
+//
+//        }
+//
+//        private boolean checkPlayServices() {
+//
+//            GoogleApiAvailability googleApiAvailability = GoogleApiAvailability.getInstance();
+//            int resultCode = googleApiAvailability.isGooglePlayServicesAvailable(this);
+//
+//            if (resultCode != ConnectionResult.SUCCESS) {
+//                if (googleApiAvailability.isUserResolvableError(resultCode)) {
+//                } else {
+//                    Toast.makeText(getApplicationContext(),
+//                            "This device is not supported.", Toast.LENGTH_LONG)
+//                            .show();
+//                }
+//                return false;
+//            }
+//            return true;
+//        }
+//
+//        @Override
+//        public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+//
+//        }
+//    }
+
 }
