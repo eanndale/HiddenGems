@@ -21,16 +21,16 @@ FOREIGN KEY(place_id) REFERENCES Places(place_id) ON DELETE CASCADE
 );
 
 CREATE TABLE Routes (
-route_id INT AUTO_INCREMENT,
 phone_id VARCHAR(100) NOT NULL,
+route_id INT AUTO_INCREMENT,
 start_date DATETIME NOT NULL,
 end_date DATETIME NOT NULL,	
 budget FLOAT(10) NOT NULL,
 radius INT NOT NULL,
 isDriving BOOL DEFAULT 0,
 ind INT DEFAULT 0,
-PRIMARY KEY(phone_id),
-FOREIGN KEY (phone_id) REFERENCES Users(phone_id) ON DELETE CASCADE
+PRIMARY KEY(route_id),
+FOREIGN KEY (route_id) REFERENCES Users(phone_id) ON DELETE CASCADE
 );
 
 CREATE TABLE Keywords (
