@@ -454,6 +454,7 @@ def save():
     strp_end_date = datetime.datetime.strptime(end_date, '%m%d%Y') if end_date else ""
     # endDate = strp_end_date.strftime("%m%d%Y")
 
+
     budget = input["budget"] # maybe typecast to float
     radius = input["radius"] # maybe typecast to int
     keywords = input["keywords"]
@@ -463,7 +464,7 @@ def save():
     sql.execute("INSERT IGNORE INTO Users (phone_id) VALUES (%s);", (phone_id))
     
     sql = conn.cursor()
-    sql.execute( "INSERT IGNORE INTO Routes (phone_id, start_date, end_date, budget, radius) VALUES (%s, %s, %s, %s, %s);", (phone_id, strp_start_date, strp_end_date, budget, radius)) 
+    sql.execute( "REPLACE INTO Routes (phone_id, start_date, end_date, budget, radius) VALUES (%s, %s, %s, %s, %s);", (phone_id, strp_start_date, strp_end_date, budget, radius)) 
     
    
     sql = conn.cursor()
@@ -473,7 +474,7 @@ def save():
 
     for keyword in keywords:
         sql = conn.cursor()
-        sql.execute("INSERT IGNORE INTO Keywords(route_id, keyword) VALUES (%s, %s);", (route_id, keyword))
+        sql.execute("REPLACE INTO Keywords(route_id, keyword) VALUES (%s, %s);", (route_id, keyword))
 
     for i in range(len(stops)):
         orig_lat = float(stops[i]['orig_lat'])
@@ -602,7 +603,7 @@ def load(phone_id):
                 tempDict = {
                     "place_id" : place_id,
                     "name" : row2[1],
-                    "stop_date" : row1[5].strftime("%m%d%Y") if row1[5] else '',
+                    "stop_date" : row1[5].strftime("%m%d%Y") if row1[5] else "",
                     "orig_latitude" : row1[3],
                     "orig_longitude" : row1[4],
                     "latitude" : row2[2],
