@@ -33,8 +33,8 @@ def forecast(lat_, lon_):
     conn = pymysql.connect( host=rds_host, user=name, passwd=password, db=db_name, autocommit=True, connect_timeout=15)
     cur = conn.cursor()
 
-    sql = 'SELECT stop_num FROM Stops WHERE lat = %s AND long = %s;'
-    cur.execute(sql, (phone_id))
+    # sql = 'SELECT stop_num FROM Stops WHERE lat = %s AND long = %s;'
+    # cur.execute(sql, (phone_id))
 
     # Weather at certain time
     url = 'http://api.openweathermap.org/data/2.5/forecast?lat=' + str(lat_) + '&lon=' + str(lon_) + '&appid=' + key
@@ -44,12 +44,12 @@ def forecast(lat_, lon_):
 
 
     owm = pyowm.OWM(key)  # You MUST provide a valid API key
-    obs = owm.weather_at_coords(lat_, lon_)
+    obs = owm.weather_at_coords(float(lat_), float(lon_))
     weather = obs.get_weather()
 
     results = {
         "temp": weather.get_temperature('fahrenheit'),
-        "description": weather.get_detailed_status,
+        "description": weather.get_detailed_status(),
         "json": json_object
     }
     
@@ -653,13 +653,13 @@ def nearby():
     #     max_price = 4
 
     if ('lodging' in input):
-        nearby = gmaps.places_nearby(location = [lat, long], type = 'lodging', max_price = max_price, open_now = True, radius = 50000) # 5 miles
+        nearby = gmaps.places(location = [lat, long], query = 'hotel', max_price = max_price, open_now = True, radius = 50000) # 5 miles
     elif ('gas_station' in input):
-        nearby = gmaps.places_nearby(location = [lat, long], type = 'gas_station', max_price = max_price, open_now = True, radius = 50000) # 5 miles
+        nearby = gmaps.places(location = [lat, long], query = 'gas', max_price = max_price, open_now = True, radius = 50000) # 5 miles
     elif ('restaurant' in input):
-        nearby = gmaps.places_nearby(location = [lat, long], type = 'restaurant', max_price = max_price, open_now = True, radius = 50000) # 5 miles
+        nearby = gmaps.places(location = [lat, long], query = 'restaurant', max_price = max_price, open_now = True, radius = 50000) # 5 miles
     else:
-        nearby = gmaps.places_nearby(keyword = 'reststop', location = [lat, long], max_price = max_price, open_now = True, radius = 50000) # 5 miles
+        nearby = gmaps.places(location = [lat, long], query = 'rest area', max_price = max_price, open_now = True, radius = 50000) # 5 miles
 
     results = {
         'places': []
