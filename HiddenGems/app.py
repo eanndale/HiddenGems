@@ -50,6 +50,13 @@ def get_weather_object(lat_, lon_):
     #obs = owm.daily_forecast('London,uk', limit = 5)
     weather = obs.get_weather()
 
+    results = {
+        "current": weather.get_temperature('fahrenheit'),
+        "high": 0,
+        "low": 0,
+        "description": 0
+    }
+
     return weather
 
 #return the temperature in fahrenheit
@@ -481,7 +488,7 @@ def save():
 # Loads route
 @app.route('/route/load/{phone_id}/{route_id}', methods=['GET'])
 def load(phone_id, route_id):
-    return {'hello': 'world'}
+
     results = {
         "route_id" : route_id,
         "places": {},
@@ -493,7 +500,6 @@ def load(phone_id, route_id):
         "index": 0,
         "isDriving": 'false'
     }
-    return results
 
     rds_host = 'hiddengemsdb.cp1ydngf7sx0.us-east-1.rds.amazonaws.com'
     name = 'HiddenGems'
@@ -503,7 +509,7 @@ def load(phone_id, route_id):
     gmaps = googlemaps.Client(key='AIzaSyD_O6TM3vX-EbHpsSwVu-DPsfCxRar7xJo')
     #
     conn = pymysql.connect( host=rds_host, user=name, passwd=password, db=db_name, autocommit=True, connect_timeout=15)
-    
+
     # request = app.current_request
     # input = request.json_body
     
@@ -716,7 +722,7 @@ def arrive(phone_id):
 
     sql = 'SELECT ind FROM Routes WHERE phone_id = %s;'
     cur.execute(sql, (phone_id))
-    result = cur.fetchone;
+    result = cur.fetchone
     ind = result['ind']
 
     cur.close()
@@ -734,12 +740,12 @@ def go(phone_id):
     conn = pymysql.connect( host=rds_host, user=name, passwd=password, db=db_name, autocommit=True, connect_timeout=15)
     cur = conn.cursor()
 
-    sql = 'UPDATE * FROM Routes SET isDriving = 1, ind = ind + 1 WHERE phone_id = %s;'
+    sql = 'UPDATE Routes SET isDriving = 1, ind = ind + 1 WHERE phone_id = %s;'
     cur.execute(sql, (phone_id))
 
     sql = 'SELECT ind FROM Routes WHERE phone_id = %s;'
     cur.execute(sql, (phone_id))
-    result = cur.fetchone;
+    result = cur.fetchone()
     ind = result['ind']
 
     cur.close()
