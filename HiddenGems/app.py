@@ -431,14 +431,14 @@ def save():
     phone_id = input["phone_id"] # maybe typecast to int
     start_place_id = input["start_place_id"]
     # start_long = float(input["start_long"])
-    start_date = input["start_date"]
-    strp_start_date = datetime.datetime.strptime(start_date, '%m%d%Y')
+    start_date = input["start_date"] if "start_date" in input else ""
+    strp_start_date = datetime.datetime.strptime(start_date, '%m%d%Y') if start_date else ""
     # startDate = strp_start_date.strftime("%m%d%Y")
 
     end_place_id = input["end_place_id"]
     # end_long = float(input["end_long"])
-    end_date = input["end_date"]
-    strp_end_date = datetime.datetime.strptime(end_date, '%m%d%Y')
+    end_date = input["end_date"] if "end_date" in input else ""
+    strp_end_date = datetime.datetime.strptime(end_date, '%m%d%Y') if end_date else ""
     # endDate = strp_end_date.strftime("%m%d%Y")
 
     budget = input["budget"] # maybe typecast to float
@@ -470,9 +470,9 @@ def save():
         stop_id = float(i)
         # index = stops[i]["index"]
         place_id = stops[i]['placeid']
-
-        stop_date = stops[i]['stop_date']
-        stopDate = stop_date.strftime("%m%d%Y")
+        stop_num = stops[i]["stop_num"] if "stop_num" in stops[i] else 0
+        stop_date = stops[i]['stop_date'] if 'stop_date' in stops[i] else ""
+        stopDate = stop_date.strftime("%m%d%Y") if 'stop_date' in stops[i] else 0
         name = stops[i]['name']
         rating = stops[i]['rating']
         sql2 = conn.cursor()
@@ -480,7 +480,7 @@ def save():
         sql = conn.cursor()
         # sql.execute("INSERT INTO Stops(route_id, place_id, stop_id, stop_date, orig_latitude, orig_longitude) VALUES (?,?,?,?,?,?);", (route_id, place_id, i, stop_date, orig_lat, orig_long))
         # sql.execute("INSERT INTO Stops(route_id, place_id, stop_id, orig_latitude, orig_longitude) VALUES (%s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE place_id '" + place_id + "' or;", (route_id, place_id, stop_id, orig_lat, orig_long))
-        sql.execute("REPLACE INTO Stops(route_id, place_id, stop_id, orig_latitude, orig_longitude, stop_date) VALUES (%s, %s, %s, %s, %s, %s);", (route_id, place_id, stop_id, orig_lat, orig_long, stopDate))
+        sql.execute("REPLACE INTO Stops(route_id, place_id, stop_id, orig_latitude, orig_longitude, stop_date, stop_num) VALUES (%s, %s, %s, %s, %s, %s, %s);", (route_id, place_id, stop_id, orig_lat, orig_long, stopDate, stop_num))
 
     done = {
         'done': 'true'
@@ -511,7 +511,7 @@ def load(phone_id):
     # phone_id = input['phone_id']
     
     #start and end location, start and end dates, stops, preferences, long/lat, place ID, place name, description
-
+# look for route id based on phone id
 
     results = {
         "places": [],
