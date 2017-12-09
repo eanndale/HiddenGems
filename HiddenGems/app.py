@@ -25,6 +25,17 @@ def index():
 def forecast(lat_, lon_):
     key = "5a61d0979d0298f923b45e24d5cfd6ee"
 
+    rds_host = 'hiddengemsdb.cp1ydngf7sx0.us-east-1.rds.amazonaws.com'
+    name = 'HiddenGems'
+    password = 'Stargazing1'
+    db_name = 'HiddenGems'
+
+    conn = pymysql.connect( host=rds_host, user=name, passwd=password, db=db_name, autocommit=True, connect_timeout=15)
+    cur = conn.cursor()
+
+    sql = 'SELECT stop_num FROM Stops WHERE lat = %s AND long = %s;'
+    cur.execute(sql, (phone_id))
+
     # Weather at certain time
     url = 'http://api.openweathermap.org/data/2.5/forecast?lat=' + str(lat_) + '&lon=' + str(lon_) + '&appid=' + key
     response = requests.get(url)
@@ -735,7 +746,7 @@ def arrive(phone_id):
 
     sql = 'SELECT ind FROM Routes WHERE phone_id = %s;'
     cur.execute(sql, (phone_id))
-    result = cur.fetchone
+    result = cur.fetchone()
     ind = result[0]
 
     cur.close()
