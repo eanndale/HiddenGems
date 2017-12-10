@@ -409,6 +409,7 @@ def update():
 
     request = app.current_request
     input = request.json_body
+    radius = int(input["radius"]) / 0.62137119 * 1000
     keywords = ((input["keywords"])[1:-1]).split(', ')
 
     # Insert rejected place into db
@@ -416,26 +417,33 @@ def update():
     cur.execute(sql, (input['phone_id'], input['place_id'], input['name']))
 
     # Format multiple keywords for API search
-    parsed_keywords = ""
-    for i in range(len(keywords)):
-        if i == 0:
-            parsed_keywords = "(" + keywords[0] + ")"
-        else:
-            parsed_keywords = parsed_keywords + " OR (" + keywords[i] + ")"
+    # parsed_keywords = ""
+    # for i in range(len(keywords)):
+    #     if i == 0:
+    #         parsed_keywords = keywords[0]
+    #     else:
+    #         parsed_keywords = parsed_keywords + "|" + keywords[i]
+    # for i in range(len(keywords)):
+    #     if i == 0:
+    #         parsed_keywords = "(" + keywords[0] + ")"
+    #     else:
+    #         parsed_keywords = parsed_keywords + " OR (" + keywords[i] + ")"
 
-    results = {
-        'places': 0
-    }
+    all_places = []
 
-    nearby = gmaps.places_nearby(keyword = parsed_keywords, location = [input['orig_lat'], input['orig_long']], radius = input['radius'])
-    if (len(nearby['results']) > 0) :
-        # for j in range(len(nearby['results'])):
-        for nearest in nearby['results']:
+    # Make a nearby search for each keyword because stuff's deprecated HAHAHA
+    for keyword in keywords:
 
-            sql = "SELECT * FROM UserPlaces WHERE phone_id = %s AND name = %s;"
-            cur.execute(sql, (input['phone_id'], input['name']))
+        nearby = gmaps.places_nearby(name = keyword, location = [float(input['orig_lat']), float(input['orig_long'])], radius = radius)
 
-            if not cur.rowcount: # If the name found doesn't match any existing in
+        if (len(nearby['results']) > 0) :
+            # for j in range(len(nearby['results'])):
+            for nearest in nearby['results']:
+
+                # sql = "SELECT * FROM UserPlaces WHERE phone_id = %s AND name = %s;"
+                # cur.execute(sql, (input['phone_id'], nearest['name']))
+                #
+                # if not cur.rowcount: # If the name found doesn't match any existing in
                 data = {'place_id': nearest['place_id'],
                         'name': nearest['name'],
                         'latitude': nearest['geometry']['location']['lat'],
@@ -445,18 +453,37 @@ def update():
                         'orig_long': input['orig_long'],
                         'index': input['index'],
                         'date': input['date'],
-                        'num': input['num']
+                        # 'num': input['num']
                         }
 
                 # Add new location to db if unique
                 sql = "INSERT IGNORE INTO Places(place_id, name, latitude, longitude) VALUES(%s, %s, %s, %s);"
                 cur.execute(sql, (data['place_id'], data['name'], data['latitude'], data['longitude']))
 
-                results['places'] = data
+                all_places.append(data)
 
-                cur.close()
-                conn.close()
-                return results
+    all_places = sorted(all_places, key=lambda k: k['rating'], reverse=True)
+
+    for i in range(len(all_places)):
+        sql = "SELECT * FROM UserPlaces WHERE phone_id = %s AND name = %s;"
+        cur.execute(sql, (input['phone_id'], all_places[i]['name']))
+
+        if not cur.rowcount: # If the name found doesn't match any existing in UserPlaces
+
+            results = {
+                'places': all_places[i],
+                'all_places': all_places
+            }
+            cur.close()
+            conn.close()
+            return results
+
+
+    results = {
+        'places': 0,
+        'all_places': all_places
+    }
+
 
     # If nothing suitable was found return nothing (can be changed)
     cur.close()
