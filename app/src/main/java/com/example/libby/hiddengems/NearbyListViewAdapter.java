@@ -1,11 +1,14 @@
 package com.example.libby.hiddengems;
 
 import android.app.Activity;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.ListAdapter;
 import android.widget.TextView;
 
 import org.json.JSONObject;
@@ -18,7 +21,7 @@ import java.util.HashMap;
  * Created by zaaron on 12/9/2017.
  */
 
-public class NearbyListViewAdapter extends BaseAdapter{
+public class NearbyListViewAdapter extends BaseAdapter implements ListAdapter {
     public static final String FIRST_COLUMN = "name";
     public static final String SECOND_COLUMN = "price";
     public static final String THIRD_COLUMN = "distance";
@@ -29,10 +32,11 @@ public class NearbyListViewAdapter extends BaseAdapter{
     TextView txtThird;
     Button go;
 
-    public NearbyListViewAdapter(Activity activity,ArrayList<JSONObject> list){
+
+    public NearbyListViewAdapter(Activity activity, ArrayList<JSONObject> list) {
         super();
-        this.activity=activity;
-        this.list=list;
+        this.activity = activity;
+        this.list = list;
     }
 
     @Override
@@ -54,42 +58,42 @@ public class NearbyListViewAdapter extends BaseAdapter{
     public View getView(int position, View convertView, ViewGroup parent) {
         // TODO Auto-generated method stub
 
+        LayoutInflater inflater = activity.getLayoutInflater();
+        View view = convertView;
+        if (view == null) {
 
-
-        LayoutInflater inflater=activity.getLayoutInflater();
-
-        if(convertView == null){
-
-            convertView=inflater.inflate(R.layout.nearby_row, null);
-
-            txtFirst=(TextView) convertView.findViewById(R.id.nearby_name);
-            txtSecond=(TextView) convertView.findViewById(R.id.nearby_price);
-            txtThird=(TextView) convertView.findViewById(R.id.nearby_distance);
-            go=(Button) convertView.findViewById(R.id.nearby_go);
+            view = inflater.inflate(R.layout.nearby_row, null);
+            ViewHolder holder = new ViewHolder();
+            holder.txtFirst = (TextView) view.findViewById(R.id.nearby_name);
+            holder.txtSecond = (TextView) view.findViewById(R.id.nearby_price);
+            holder.txtThird = (TextView) view.findViewById(R.id.nearby_distance);
+            holder.go = (Button) view.findViewById(R.id.nearby_go);
+            view.setTag(holder);
         }
 
-        final JSONObject map=list.get(position);
+        final JSONObject map = list.get(position);
+        ViewHolder holder = (ViewHolder)view.getTag();
         try {
-            txtFirst.setText(map.getString(FIRST_COLUMN));
-            switch(map.getInt(SECOND_COLUMN)) {
+            holder.txtFirst.setText(map.getString(FIRST_COLUMN));
+            switch (map.getInt(SECOND_COLUMN)) {
                 case 1:
-                    txtSecond.setText("$");
+                    holder.txtSecond.setText("$");
                     break;
                 case 2:
-                    txtSecond.setText("$$");
+                    holder.txtSecond.setText("$$");
                     break;
                 case 3:
-                    txtSecond.setText("$$$");
+                    holder.txtSecond.setText("$$$");
                     break;
                 case 4:
-                    txtSecond.setText("$$$$");
+                    holder.txtSecond.setText("$$$$");
                     break;
                 default:
-                    txtSecond.setText("??");
+                    holder.txtSecond.setText("??");
                     break;
             }
-            txtThird.setText(map.getString(THIRD_COLUMN));
-            go.setOnClickListener(new View.OnClickListener() {
+            holder.txtThird.setText(map.getString(THIRD_COLUMN));
+            holder.go.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     try {
@@ -98,17 +102,23 @@ public class NearbyListViewAdapter extends BaseAdapter{
                         DriveActivity.goGoogle = true;
                         activity.finish();
 //                        activity.get().routeGoogleTo(map.getDouble("lat"), map.getDouble("lng"));
-                    }
-                    catch (Exception e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
             });
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return convertView;
+        return view;
+    }
+
+
+    static class ViewHolder {
+        TextView txtFirst;
+        TextView txtSecond;
+        TextView txtThird;
+        Button go;
     }
 }

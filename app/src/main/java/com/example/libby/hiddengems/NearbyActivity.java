@@ -2,6 +2,7 @@ package com.example.libby.hiddengems;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
@@ -27,9 +28,12 @@ public class NearbyActivity extends AppCompatActivity {
             ArrayList<JSONObject> arrayList = new ArrayList<>();
             for (int i = 0; i < array.length(); i++) {
                 arrayList.add(array.getJSONObject(i));
+                Log.d("HELP", "onCreate: " + array.getJSONObject(i));
             }
+
             ListView listView = (ListView) findViewById(R.id.nearby_list);
             listView.setAdapter(new NearbyListViewAdapter(this, arrayList));
+
         } catch (Exception e) {
             e.printStackTrace();
         }
