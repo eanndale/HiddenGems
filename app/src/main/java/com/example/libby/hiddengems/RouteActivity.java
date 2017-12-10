@@ -67,6 +67,14 @@ public class RouteActivity extends AppCompatActivity {
             }
         });
 
+        //Attraction List
+        final ArrayAdapter<String> adapter;
+        adapter = new ArrayAdapter<String>(
+                this,
+                android.R.layout.simple_list_item_multiple_choice,
+                Preferences.attractionList);
+
+
         //Add button
         add.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -75,6 +83,7 @@ public class RouteActivity extends AppCompatActivity {
                     return;
                 }
                 Preferences.addAttraction(attractions.getText().toString());
+                adapter.notifyDataSetChanged();
                 attractions.setText("Type attractions");
             }
         });
@@ -84,6 +93,7 @@ public class RouteActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Preferences.attractionList.clear();
+                adapter.notifyDataSetChanged();
             }
         });
 
@@ -92,6 +102,7 @@ public class RouteActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Preferences.attractionList.removeAll(dels);
+                adapter.notifyDataSetChanged();
             }
         });
 
@@ -136,12 +147,6 @@ public class RouteActivity extends AppCompatActivity {
             }
         });
 
-        //Attraction List
-        ArrayAdapter<String> adapter;
-        adapter = new ArrayAdapter<String>(
-                this,
-                android.R.layout.simple_list_item_multiple_choice,
-                Preferences.attractionList);
 
 
         //prefList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
@@ -155,9 +160,11 @@ public class RouteActivity extends AppCompatActivity {
                 checkedTextView.setChecked(!checkedTextView.isChecked());
                 if (checkedTextView.isChecked()) {
                     dels.add(Preferences.getAttraction(position));
+                    Log.d("click", "onItemClick: add");
                 }
                 else {
                     dels.remove(Preferences.getAttraction(position));
+                    Log.d("vrvrf", "onItemClick: remove");
                 }
                 Log.d("jfierojf", String.valueOf(position));
             }
