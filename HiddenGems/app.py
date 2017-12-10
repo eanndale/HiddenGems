@@ -47,11 +47,13 @@ def forecast(lat_, lon_):
     forecast = json.loads(response_string)
 
     current = float(forecast['currently']['temperature'])
-    high = float(forecast['daily']['data'][0]['temperatureHigh'])
-    low = float(forecast['daily']['data'][0]['temperatureLow'])
-    summary = forecast['daily']['data'][0]['summary']
-    type = forecast['daily']['data'][0]['icon']
-    precip_type = forecast['daily']['data'][0]['precipType'] if ['precipType'] in forecast['daily']['data'][0] else ''
+    daily = forecast['daily']['data'][0]
+    high = float(daily['temperatureHigh'])
+    low = float(daily['temperatureLow'])
+    summary = daily['summary']
+    type = daily['icon']
+
+    # precip_type = daily['precipType'] if ['precipType'] in daily else ''
 
     results = {
         'current': current,
@@ -59,8 +61,9 @@ def forecast(lat_, lon_):
         'low': low,
         'summary': summary,
         'type': type,
-        'precip_type': precip_type,
-        'forecast': forecast
+        'precip_type': daily['precipType'] if 'precipType' in daily else '',
+        # 'daily': daily,
+        # 'forecast': forecast
     }
 
     return results
