@@ -1,18 +1,24 @@
 package com.example.libby.hiddengems;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.view.View;
+import android.widget.Adapter;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
+import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
+import com.google.android.gms.maps.model.LatLng;
 
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
@@ -25,6 +31,7 @@ import org.json.JSONObject;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by zaaron on 11/11/2017.
@@ -165,13 +172,15 @@ public class Utils {
                     if (low.get() != null && result.has("low")) {
                         low.get().setText(result.getString("low"));
                     }
-                    JSONObject cast = result.getJSONObject("forecast");
-                    JSONObject daily = cast.getJSONObject("daily");
-                    JSONArray why = daily.getJSONArray("data");
-                    JSONObject killme = why.getJSONObject(0);
-                    if (icon.get() != null && killme.has("icon")) {
+//                    JSONObject cast = result.getJSONObject("forecast");
+//                    JSONObject daily = cast.getJSONObject("daily");
+//                    JSONArray why = daily.getJSONArray("data");
+//                    JSONObject killme = why.getJSONObject(0);
+//                    if (icon.get() != null && killme.has("icon")) {
+                    if (icon.get() != null && result.has("type")) {
                         icon.get().setVisibility(View.VISIBLE);
-                        switch(killme.getString("icon")) {
+//                        switch(killme.getString("icon")) {
+                        switch(result.getString("type")) {
                             case "fog":
                                 icon.get().setImageResource(R.drawable.fog);
                                 break;
@@ -258,6 +267,50 @@ public class Utils {
         }
 
     }
+
+    public static class sendAdd extends AsyncTask<JSONObject, Void, Integer> {
+//        final WeakReference<ListView> listView;
+        final Place place;
+        public sendAdd(Place place
+//                , ListView listView
+        ) {
+            this.place = place;
+//            this.listView = new WeakReference<ListView>(listView);
+        }
+        @Override
+        protected Integer doInBackground(JSONObject[] maps) {
+            JSONArray curr = new JSONArray();
+            try {
+                for (int i = 0; i < Utils.arra.size(); ++i) {
+                    JSONObject json = new JSONObject()
+                            .put("lat", arra.get(i).getLoc().latitude)
+                            .put("long", arra.get(i).getLoc().longitude);
+                    curr.put(json);
+                }
+                JSONObject j = new JSONObject()
+                        .put("lat", place.getLatLng().latitude)
+                        .put("long", place.getLatLng().longitude);
+                j.put("places", curr);
+                JSONObject rsp = Utils.makeRequest("https://105yog30qc.execute-api.us-east-1.amazonaws.com/api/insert", j.toString());
+                if (rsp.has("ind")) {
+                    return rsp.getInt("ind");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+        @Override
+        protected void onPostExecute(Integer res) {
+            LatLng ll = place.getLatLng();
+            StopInfo si = new StopInfo(place.getName().toString(), place.getId(), place.getRating(), ll.latitude, ll.longitude, ll.latitude, ll.longitude, res, arra.get(res).getDate());
+            arra.add(res, si);
+//            Adapter adapter = listView.get().getAdapter();
+//            listView.get().setAdapter((ArrayAdapter)adapter);
+            ma.drawMap();
+        }
+    }
+
     public static class sendSave extends AsyncTask<String, Void, String> {
         private WeakReference<MapsActivity> context;
         private boolean sayGo;

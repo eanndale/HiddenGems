@@ -2,6 +2,8 @@ package com.example.libby.hiddengems;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ListView;
 
 import org.json.JSONArray;
@@ -31,5 +33,12 @@ public class NearbyActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        Button nearby_back = findViewById(R.id.nearby_back);
+        nearby_back.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
     }
 }

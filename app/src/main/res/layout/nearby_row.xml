@@ -26,12 +26,20 @@
         android:layout_height="wrap_content"
         android:layout_weight=".3"
         android:maxLines="1"
-        android:text="10.7 mi"
-        android:textAlignment="textStart"
+        android:text="10.7"
+        android:textAlignment="textEnd"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight=".15"
+        android:text="mi"
         android:textSize="18sp" />
 
     <Button
-        android:id="@+id/button3"
+        android:id="@+id/nearby_go"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight=".3"

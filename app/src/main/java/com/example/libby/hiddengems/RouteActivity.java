@@ -151,22 +151,22 @@ public class RouteActivity extends AppCompatActivity {
 
         //prefList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
         prefList.setAdapter(adapter);
-        prefList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
-        prefList.setItemsCanFocus(false);
+//        prefList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+//        prefList.setItemsCanFocus(false);
         prefList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+
                 CheckedTextView checkedTextView = ((CheckedTextView)view);
-                checkedTextView.setChecked(!checkedTextView.isChecked());
+
                 if (checkedTextView.isChecked()) {
                     dels.add(Preferences.getAttraction(position));
-                    Log.d("click", "onItemClick: add");
+                    checkedTextView.setChecked(true);
                 }
                 else {
                     dels.remove(Preferences.getAttraction(position));
-                    Log.d("vrvrf", "onItemClick: remove");
+                    checkedTextView.setChecked(false);
                 }
-                Log.d("jfierojf", String.valueOf(position));
             }
         });
 

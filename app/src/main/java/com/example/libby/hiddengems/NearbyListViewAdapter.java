@@ -65,20 +65,37 @@ public class NearbyListViewAdapter extends BaseAdapter{
             txtFirst=(TextView) convertView.findViewById(R.id.nearby_name);
             txtSecond=(TextView) convertView.findViewById(R.id.nearby_price);
             txtThird=(TextView) convertView.findViewById(R.id.nearby_distance);
-
+            go=(Button) convertView.findViewById(R.id.nearby_go);
         }
 
         final JSONObject map=list.get(position);
         try {
             txtFirst.setText(map.getString(FIRST_COLUMN));
-            txtSecond.setText(map.getString(SECOND_COLUMN));
+            switch(map.getInt(SECOND_COLUMN)) {
+                case 1:
+                    txtSecond.setText("$");
+                    break;
+                case 2:
+                    txtSecond.setText("$$");
+                    break;
+                case 3:
+                    txtSecond.setText("$$$");
+                    break;
+                case 4:
+                    txtSecond.setText("$$$$");
+                    break;
+                default:
+                    txtSecond.setText("??");
+                    break;
+            }
             txtThird.setText(map.getString(THIRD_COLUMN));
             go.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     try {
-                        DriveActivity.nearby_lat = map.getDouble("lat");
-                        DriveActivity.nearby_lng = map.getDouble("lng");
+                        DriveActivity.nearby_lat = map.getDouble("latitude");
+                        DriveActivity.nearby_lng = map.getDouble("longitude");
+                        DriveActivity.goGoogle = true;
                         activity.finish();
 //                        activity.get().routeGoogleTo(map.getDouble("lat"), map.getDouble("lng"));
                     }
