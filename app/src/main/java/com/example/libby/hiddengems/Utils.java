@@ -124,6 +124,10 @@ public class Utils {
                 ret.append("/");
                 ret.append(json.getString("phone_id"));
             }
+            if(json.has("place_id")) {
+                ret.append("/");
+                ret.append(json.getString("place_id"));
+            }
             if(json.has("lat")) {
                 ret.append("/");
                 ret.append(json.getDouble("lat"));
@@ -481,6 +485,7 @@ public class Utils {
         protected String doInBackground(StopInfo[] maps) {
             sending = true;
             try {
+                Log.e("IN UPDATE", "AHHHH");
                 Log.e("FIRST", maps[0].getPlaceId());
                 JSONObject j = new JSONObject()
                         .put("phone_id", Preferences.getAndroidId())
@@ -490,7 +495,8 @@ public class Utils {
                         .put("orig_long", maps[0].getOrig_long())
                         .put("index", maps[0].getIndex())
                         .put("radius", Preferences.getDetourRadius())
-                        .put("budget", Preferences.getBudget());
+                        .put("budget", Preferences.getBudget())
+                        .put("date", maps[0].getDate());
                 ArrayList<String> userPrefList = Preferences.attractionList;
                 if (userPrefList.isEmpty()) {
                     userPrefList.add("attractions");
@@ -575,7 +581,41 @@ public class Utils {
             sending = false;
             ma.drawMap();
         }
+    }
 
+    public static class getDesc extends AsyncTask<StopInfo, Void, String> {
+        @Override
+        protected String doInBackground(StopInfo[] strings) {
+            try {
+                for(int i = 0; i < strings.length; i++) {
+                    JSONObject json = new JSONObject().put("place_id", strings[i].getPlaceId());
+                    JSONObject rsp = Utils.getRequest("https://105yog30qc.execute-api.us-east-1.amazonaws.com/api/describe", jsonToUrl(json));
+                    StringBuilder sb = new StringBuilder();
+                    if (rsp != null && rsp.has("reviews") && rsp.getJSONArray("reviews").length() != 0) {
+                        JSONArray ja = rsp.getJSONArray("reviews");
+                        for (int j = 0; j < ja.length() && j < 3; j++) {
+                            JSONObject rev = ja.getJSONObject(j);
+                            if (rev.has("author_name")) {
+                                sb.append(rev.getString("author_name"));
+                            }
+                            else {
+                                sb.append("Anon");
+                            }
+                            sb.append("\n\t");
+                            sb.append(rev.getString("text"));
+                            sb.append("\n");
+                        }
+                    }
+                    if (sb.length() > 0) {
+                        Utils.arra.get(Utils.arra.indexOf(strings[i])).setDesc(sb.toString());
+                    }
+                }
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
     }
 //64fffabdc426e18d
     public static void showDialog(Context context,
@@ -599,10 +639,15 @@ public class Utils {
 
         RatingBar ratingBar = (RatingBar) incompleteWarning.findViewById(R.id.ratingBar);
         if(stars_visible) {
-            ratingBar.setRating((float) starz);
-            ratingBar.setStepSize(0.1f);
-            ratingBar.setVisibility(View.VISIBLE);
-            ratingBar.setIsIndicator(true);
+            if (starz != 0) {
+                ratingBar.setRating((float) starz);
+                ratingBar.setStepSize(0.1f);
+                ratingBar.setIsIndicator(true);
+                ratingBar.setVisibility(View.VISIBLE);
+            }
+            else {
+                ratingBar.setVisibility(View.INVISIBLE);
+            }
         }
         else {
             ratingBar.setVisibility(View.INVISIBLE);
@@ -618,9 +663,8 @@ public class Utils {
         }
         incompleteWarning.show();
 
-        LinearLayout ll;
+        LinearLayout ll = (LinearLayout) incompleteWarning.findViewById(R.id.dialog_bot);
         if(dialog_bot_vis) {
-            ll = (LinearLayout) incompleteWarning.findViewById(R.id.dialog_bot);
             ll.setVisibility(View.VISIBLE);
             Button b = (Button) incompleteWarning.findViewById(R.id.dialogueButton);
             b.setOnClickListener(new View.OnClickListener() {
@@ -629,9 +673,11 @@ public class Utils {
             });
         }
         else if(new_loc_bot_vis) {
+            ll.setVisibility(View.INVISIBLE);
             ll = (LinearLayout) incompleteWarning.findViewById(R.id.new_loc_bot);
             ll.setVisibility(View.VISIBLE);
             Button bad = (Button) incompleteWarning.findViewById(R.id.dialog_negativeButton);
+            Button remove = (Button) incompleteWarning.findViewById(R.id.dialog_removeButton);
             Button good = (Button) incompleteWarning.findViewById(R.id.dialog_positiveButton);
             final StopInfo si = arra.get(index);
             bad.setOnClickListener(new View.OnClickListener() {
@@ -639,6 +685,14 @@ public class Utils {
                 public void onClick(View v) {
                     arra.remove(si);
                     new sendUpdate().execute(si);
+                }
+            });
+            remove.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    arra.remove(si);
+                    ma.drawMap();
+                    incompleteWarning.dismiss();
                 }
             });
             good.setOnClickListener(new View.OnClickListener() {

@@ -141,32 +141,14 @@ tools:context=".MainActivity">
                     <ListView
                         android:id="@+id/listView"
                         android:layout_width="match_parent"
-                        android:layout_height="235dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginEnd="16dp"
+                        android:layout_marginStart="16dp"
                         android:layout_weight="1"
                         android:clickable="true"
                         android:scrollbars="vertical">
 
                     </ListView>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
-
-                        <Button
-                            android:id="@+id/clear_stops"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Clear Stops" />
-
-                        <Button
-                            android:id="@+id/delete_stops"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Delete Selected" />
-                    </LinearLayout>
 
                 </LinearLayout>
 

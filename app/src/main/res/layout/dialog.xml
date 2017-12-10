@@ -20,6 +20,8 @@
         android:layout_marginRight="20dp"
         android:layout_marginTop="10dp"
         android:layout_toRightOf="@+id/imageDialog"
+        android:autoSizeTextType="uniform"
+        android:maxLines="2"
         android:text="Title"
         android:textSize="16pt"
         android:visibility="invisible" />
@@ -82,11 +84,18 @@
         android:visibility="invisible">
 
         <Button
+            android:id="@+id/dialog_removeButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.0"
+            android:text="Remove" />
+
+        <Button
             android:id="@+id/dialog_negativeButton"
             android:layout_width="0.0dip"
             android:layout_height="fill_parent"
             android:layout_weight="1.0"
-            android:text="New Location" />
+            android:text="Replace" />
 
         <Button
             android:id="@+id/dialog_positiveButton"
@@ -96,4 +105,5 @@
             android:text="Ok" />
 
     </LinearLayout>
+
 </RelativeLayout>

@@ -255,6 +255,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         as = new ArrayList<>();
         for (StopInfo si : Utils.arra) {
             as.add(si.getName());
+            new Utils.getDesc().execute(si);
         }
         adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, as);
         ListView lw = (ListView) findViewById(R.id.listView);

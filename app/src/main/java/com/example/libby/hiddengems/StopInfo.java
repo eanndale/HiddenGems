@@ -18,6 +18,7 @@ public class StopInfo {
     private double orig_long;
     private int index;
     private String date;
+    private String desc = "Yikes! There are no reviews for this location.";
     private String forecast;
 
     public StopInfo() {}
@@ -67,9 +68,9 @@ public class StopInfo {
 
     public void setIndex(int i) {this.index = i;}
 
-    public String getDesc() {
-        return "[desc goes here]";
-    }
+    public String getDesc() { return desc; }
+
+    public void setDesc(String d) { desc = d; }
 
     public String getDate() {
         return date;
