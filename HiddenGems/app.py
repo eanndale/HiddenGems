@@ -51,7 +51,7 @@ def forecast(lat_, lon_):
     low = float(forecast['daily']['data'][0]['temperatureLow'])
     summary = forecast['daily']['data'][0]['summary']
     type = forecast['daily']['data'][0]['icon']
-    precip_type = forecast['daily']['data'][0]['precipType']
+    precip_type = forecast['daily']['data'][0]['precipType'] if ['precipType'] in forecast['daily']['data'][0] else ''
 
     results = {
         'current': current,
