@@ -224,6 +224,175 @@ def calculate_initial_compass_bearing(pointA, pointB):
 # --------------------------------------------------------------------------------------------------
 
 
+# # Creates a route and returns it to the user
+# @app.route('/route', methods=['POST'])
+# def route():
+#
+#
+#     rds_host = 'hiddengemsdb.cp1ydngf7sx0.us-east-1.rds.amazonaws.com'
+#     name = 'HiddenGems'
+#     password = 'Stargazing1'
+#     db_name = 'HiddenGems'
+#
+#     conn = pymysql.connect( host=rds_host, user=name, passwd=password, db=db_name, autocommit=True, connect_timeout=15)
+#     cur = conn.cursor()
+#
+#     # gmaps = googlemaps.Client(key='AIzaSyDTo1GrHUKKmtBiVw4xBQxD1Uv24R1ypvY')
+#     gmaps = googlemaps.Client(key='AIzaSyD_O6TM3vX-EbHpsSwVu-DPsfCxRar7xJo')
+#
+#     request = app.current_request
+#     input = request.json_body
+#
+#     phone_id = input["phone_id"]
+#     start_place_id = input["start_place_id"]
+#     start_date = input["start_date"]
+#     end_place_id = input["end_place_id"]
+#     end_date = input["end_date"]
+#     budget = float(input["budget"])
+#     radius = int(input["radius"]) / 0.62137119 * 1000 # this must be in meters
+#     keywords = ((input["keywords"])[1:-1]).split(', ')
+#
+#     # # Budget calcs
+#     # if (budget <= 10):
+#     #     max_price = 1
+#     # elif (budget <= 30):
+#     #     max_price = 2
+#     # elif (budget <= 60):
+#     #     max_price = 3
+#     # else:
+#     #     max_price = 4
+#
+#     # Add user to db
+#     cur.execute("INSERT IGNORE INTO Users (phone_id) VALUES (%s);", (phone_id))
+#
+#     # Format multiple keywords for API search
+#     parsed_keywords = ""
+#     for i in range(len(keywords)):
+#         if i == 0:
+#             parsed_keywords = "(" + keywords[0] + ")"
+#         else:
+#             parsed_keywords = parsed_keywords + " OR (" + keywords[i] + ")"
+#
+#     # Get place data on start and end locations
+#     start = gmaps.place(place_id = start_place_id)
+#     end = gmaps.place(place_id = end_place_id)
+#
+#     start_address = start['result']['formatted_address']
+#     start_lat = start['result']['geometry']['location']['lat']
+#     start_long = start['result']['geometry']['location']['lng']
+#     end_address = end['result']['formatted_address']
+#     end_lat = end['result']['geometry']['location']['lat']
+#     end_long = end['result']['geometry']['location']['lng']
+#
+#     # Calculate length of trip
+#     d = getPathLength(start_lat,start_long,end_lat,end_long)
+#
+#     # Calculate time of trip (provided dates are given)
+#     if (start_date and end_date):
+#         strp_start_date = datetime.datetime.strptime(start_date, '%m%d%Y')
+#         strp_end_date = datetime.datetime.strptime(end_date, '%m%d%Y')
+#         days = abs((strp_end_date - strp_start_date).days)
+#
+#         # Calculate number of stops needed
+#         if (days == 0):
+#             stops = int(d / 240000) - 1 # Basically a stop roughly every 300 km or something like that
+#         else:
+#             stops = (days + 1) * 2 # Start + end date inclusive, two stops per day
+#
+#
+#     # Calculate number of stops (provided no dates)
+#     else:
+#         stops = max(int(d / 240000) - 1, 1)
+#
+#     # Generate midpoints
+#
+#     interval = d / (stops + 1) # Amount of distance between any two midpoints on the trip
+#     azimuth = calculate_initial_compass_bearing((start_lat, start_long), (end_lat, end_long))
+#
+#     coords = []
+#     remainder, dist = math.modf((d / interval))
+#     # coords.append([start_lat,start_long])
+#     # for distance in range(1, int(dist), int(interval)):
+#     distance = interval
+#     for i in range(stops):
+#         c = getDestinationLatLong(start_lat,start_long,azimuth,distance)
+#         coords.append(c)
+#         distance += interval
+#     # coords.append([end_lat,end_long])
+#
+#     # Call Google Maps API at each midpoint for attractions and return them in the right format
+#     results = {
+#         'coords': coords,
+#         'keywords': keywords,
+#         'parsed_keywords': parsed_keywords,
+#         'places': []
+#     }
+#
+#     # Insert start point information
+#     data = {'place_id': start_place_id,
+#             'name': start_address,
+#             'latitude': start_lat,
+#             'longitude': start_long,
+#             'rating': 0,
+#             'orig_lat': start_lat,
+#             'orig_long': start_long,
+#             'index': 0,
+#             'date': strp_start_date.strftime("%m%d%Y") if start_date else '',
+#             'num': 0
+#     }
+#     results['places'].append(data)
+#
+#     sql = "INSERT IGNORE INTO Places(place_id, name, latitude, longitude) VALUES(%s, %s, %s, %s);"
+#     cur.execute(sql, (start_place_id, start_address, start_lat, start_long))
+#
+#     count = 1
+#
+#     # Get midpoints information
+#     for i in range(len(coords)):
+#         nearby = gmaps.places_nearby(keyword = parsed_keywords, location = coords[i], radius = radius)
+#         if (len(nearby['results']) > 0) :
+#             # for j in range(len(nearby['results'])):
+#             nearest = nearby['results'][0]
+#             data = {'place_id': nearest['place_id'],
+#                     'name': nearest['name'],
+#                     'latitude': nearest['geometry']['location']['lat'],
+#                     'longitude': nearest['geometry']['location']['lng'],
+#                     'rating': nearest['rating'] if 'rating' in nearest else 0,
+#                     'orig_lat': coords[i][0],
+#                     'orig_long': coords[i][1],
+#                     'index': count,
+#                     'date': (strp_start_date + datetime.timedelta(days=i/2)).strftime("%m%d%Y") if start_date else '',
+#                     'num': i % 2 + 1 if start_date else 0 # first stop: 1, second stop: 2, each day
+#                     }
+#
+#             sql = "INSERT IGNORE INTO Places(place_id, name, latitude, longitude) VALUES(%s, %s, %s, %s);"
+#             cur.execute(sql, (data['place_id'], data['name'], data['latitude'], data['longitude']))
+#
+#             results['places'].append(data)
+#             count += 1
+#
+#     # Insert end point information
+#     data = {'place_id': end_place_id,
+#             'name': end_address,
+#             'latitude': end_lat,
+#             'longitude': end_long,
+#             'rating': 0,
+#             'orig_lat': end_lat,
+#             'orig_long': end_long,
+#             'index': count,
+#             'date': strp_end_date.strftime("%m%d%Y") if start_date else '',
+#             'num': 0
+#     }
+#
+#     sql = "INSERT IGNORE INTO Places(place_id, name, latitude, longitude) VALUES(%s, %s, %s, %s);"
+#     cur.execute(sql, (end_place_id, end_address, end_lat, end_long))
+#
+#     results['places'].append(data)
+#
+#     cur.close()
+#     conn.close()
+#     return results
+
 # Creates a route and returns it to the user
 @app.route('/route', methods=['POST'])
 def route():
@@ -266,12 +435,12 @@ def route():
     cur.execute("INSERT IGNORE INTO Users (phone_id) VALUES (%s);", (phone_id))
 
     # Format multiple keywords for API search
-    parsed_keywords = ""
-    for i in range(len(keywords)):
-        if i == 0:
-            parsed_keywords = "(" + keywords[0] + ")"
-        else:
-            parsed_keywords = parsed_keywords + " OR (" + keywords[i] + ")"
+    # parsed_keywords = ""
+    # for i in range(len(keywords)):
+    #     if i == 0:
+    #         parsed_keywords = "(" + keywords[0] + ")"
+    #     else:
+    #         parsed_keywords = parsed_keywords + " OR (" + keywords[i] + ")"
 
     # Get place data on start and end locations
     start = gmaps.place(place_id = start_place_id)
@@ -324,8 +493,9 @@ def route():
     results = {
         'coords': coords,
         'keywords': keywords,
-        'parsed_keywords': parsed_keywords,
-        'places': []
+        # 'parsed_keywords': parsed_keywords,
+        'places': [],
+        'all_places': []
     }
 
     # Insert start point information
@@ -339,7 +509,7 @@ def route():
             'index': 0,
             'date': strp_start_date.strftime("%m%d%Y") if start_date else '',
             'num': 0
-    }
+            }
     results['places'].append(data)
 
     sql = "INSERT IGNORE INTO Places(place_id, name, latitude, longitude) VALUES(%s, %s, %s, %s);"
@@ -349,27 +519,38 @@ def route():
 
     # Get midpoints information
     for i in range(len(coords)):
-        nearby = gmaps.places_nearby(keyword = parsed_keywords, location = coords[i], radius = radius)
-        if (len(nearby['results']) > 0) :
-            # for j in range(len(nearby['results'])):
-            nearest = nearby['results'][0]
-            data = {'place_id': nearest['place_id'],
-                    'name': nearest['name'],
-                    'latitude': nearest['geometry']['location']['lat'],
-                    'longitude': nearest['geometry']['location']['lng'],
-                    'rating': nearest['rating'] if 'rating' in nearest else 0,
-                    'orig_lat': coords[i][0],
-                    'orig_long': coords[i][1],
-                    'index': count,
-                    'date': (strp_start_date + datetime.timedelta(days=i/2)).strftime("%m%d%Y") if start_date else '',
-                    'num': i % 2 + 1 if start_date else 0 # first stop: 1, second stop: 2, each day
-                    }
 
-            sql = "INSERT IGNORE INTO Places(place_id, name, latitude, longitude) VALUES(%s, %s, %s, %s);"
-            cur.execute(sql, (data['place_id'], data['name'], data['latitude'], data['longitude']))
+        all_places = []
+        for keyword in keywords:
 
-            results['places'].append(data)
-            count += 1
+            nearby = gmaps.places_nearby(keyword = keyword, location = coords[i], radius = radius)
+            if (len(nearby['results']) > 0) :
+                # for j in range(len(nearby['results'])):
+                nearest = nearby['results'][0]
+                data = {'place_id': nearest['place_id'],
+                        'name': nearest['name'],
+                        'latitude': nearest['geometry']['location']['lat'],
+                        'longitude': nearest['geometry']['location']['lng'],
+                        'rating': nearest['rating'] if 'rating' in nearest else 0,
+                        'orig_lat': coords[i][0],
+                        'orig_long': coords[i][1],
+                        'index': count,
+                        'date': (strp_start_date + datetime.timedelta(days=i/2)).strftime("%m%d%Y") if start_date else '',
+                        'num': i % 2 + 1 if start_date else 0 # first stop: 1, second stop: 2, each day
+                        }
+
+                sql = "INSERT IGNORE INTO Places(place_id, name, latitude, longitude) VALUES(%s, %s, %s, %s);"
+                cur.execute(sql, (data['place_id'], data['name'], data['latitude'], data['longitude']))
+
+                all_places.append(data)
+                count += 1
+
+        all_places = sorted(all_places, key=lambda k: k['rating'], reverse=True)
+        if (len(all_places) > 0):
+            results['places'].append(all_places[0])
+
+        # TEST
+        results['all_places'].append(all_places)
 
     # Insert end point information
     data = {'place_id': end_place_id,
@@ -382,7 +563,7 @@ def route():
             'index': count,
             'date': strp_end_date.strftime("%m%d%Y") if start_date else '',
             'num': 0
-    }
+            }
 
     sql = "INSERT IGNORE INTO Places(place_id, name, latitude, longitude) VALUES(%s, %s, %s, %s);"
     cur.execute(sql, (end_place_id, end_address, end_lat, end_long))
@@ -796,8 +977,8 @@ def nearby():
 
 
 # TODO: If there are enough user reviews perhaps return those instead. Also possibly make Reviews table values similar to Google Maps API return.
-@app.route('/describe', methods=['POST'])
-def describe():
+@app.route('/describe/{phone_id}', methods=['GET'])
+def describe(place_id):
 
     rds_host = 'hiddengemsdb.cp1ydngf7sx0.us-east-1.rds.amazonaws.com'
     name = 'HiddenGems'
@@ -809,15 +990,15 @@ def describe():
 
     gmaps = googlemaps.Client(key='AIzaSyD_O6TM3vX-EbHpsSwVu-DPsfCxRar7xJo')
 
-    request = app.current_request
-    input = request.json_body
+    # request = app.current_request
+    # input = request.json_body
 
     results = {
         'reviews': []
     }
 
     # place_id = 'ChIJd8BlQ2BZwokRAFUEcm_qrcA'
-    desc = gmaps.place(place_id = input['place_id'])
+    desc = gmaps.place(place_id = place_id)
     # place_id = 'ChIJ0UINjLxSk4cR_Bm9JfqOf7M'
     # descJSON = gmaps.place(place_id = place_id)
 
