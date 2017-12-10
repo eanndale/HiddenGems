@@ -3,6 +3,8 @@ package com.example.libby.hiddengems;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -104,7 +106,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         }
         else {
-            Utils.sending = false;
+            Utils.sending = true;
+            Log.e("back", "has back");
+            final Handler handler = new Handler();
+            final Runnable task = new Runnable() {
+                @Override
+                public void run() {
+                    Utils.sending = false;
+                    drawMap();
+                }
+            };
+            handler.postDelayed(task, 2000);
+
         }
         Log.i("message", "onCreateStart");
         super.onCreate(savedInstanceState);
@@ -114,9 +127,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-//        final TextView se = findViewById(R.id.StartToEnd);
-//        String s = startPlace.getAddress().toString() + " -> " + endPlace.getAddress().toString();
-//        se.setText(s);
         Button b = findViewById(R.id.maps_negativeButton);
         b.setOnClickListener(new View.OnClickListener() {
              @Override
@@ -188,23 +198,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         spec.setContent(R.id.tab2);
         spec.setIndicator("Stop List");
         host.addTab(spec);
-
-//        ArrayAdapter<String> adapter;
-
-//        List<String> values = null; // put values in this
-//        values.add("hi");
-//
-//        adapter = new ArrayAdapter<String>(
-//                this,
-//                android.R.layout.simple_list_item_multiple_choice,
-//                values);
-//
-//        ListView prefList = (ListView) findViewById(R.id.listView2);
-//        prefList.setAdapter(adapter);
-//
-//        Log.i("message", "onCreateEnd");
-
-
     }
 
     @Override
@@ -238,12 +231,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         UiSettings settings = mMap.getUiSettings();
         settings.setZoomControlsEnabled(true);
 
-        //LatLngBounds ROUTE = new LatLngBounds(start, end);
-
-//
-//        int width = getResources().getDisplayMetrics().widthPixels;
-//        int height = getResources().getDisplayMetrics().heightPixels;
-//        int padding = (int) (width * 0.12); // offset from edges of the map 12% of screen
         mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(ROUTE, 3));
         as = new ArrayList<>();
         for (StopInfo si : Utils.arra) {

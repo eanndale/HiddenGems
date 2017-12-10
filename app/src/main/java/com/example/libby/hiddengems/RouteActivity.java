@@ -54,15 +54,16 @@ public class RouteActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Preferences.setBudget(Double.parseDouble(budgetSpace.getText().toString()));
                 Preferences.setDetourRadius(seekBar.getProgress());
-                if(goMain) {
-                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                    startActivity(intent);
-                }
-                else {
-                    Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
-                    intent.putExtra("back", true);
-                    startActivity(intent);
-                }
+                finish();
+//                if(goMain) {
+//                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+//                    startActivity(intent);
+//                }
+//                else {
+//                    Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
+//                    intent.putExtra("back", true);
+//                    startActivity(intent);
+//                }
             }
         });
 
@@ -146,6 +147,7 @@ public class RouteActivity extends AppCompatActivity {
         //prefList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
         prefList.setAdapter(adapter);
         prefList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+        prefList.setItemsCanFocus(false);
         prefList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
@@ -157,7 +159,7 @@ public class RouteActivity extends AppCompatActivity {
                 else {
                     dels.remove(Preferences.getAttraction(position));
                 }
-                Log.d("jfierojf", "onItemClick: hihi");
+                Log.d("jfierojf", String.valueOf(position));
             }
         });
 

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/nearby_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:maxLines="1"
+        android:text="Recommendation"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/nearby_price"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight=".25"
+        android:text="$$$$"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/nearby_distance"
+        android:layout_width="1dp"
+        android:layout_height="wrap_content"
+        android:layout_weight=".3"
+        android:maxLines="1"
+        android:text="10.7 mi"
+        android:textAlignment="textStart"
+        android:textSize="18sp" />
+
+    <Button
+        android:id="@+id/button3"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight=".3"
+        android:text="Go" />
+
+</LinearLayout>

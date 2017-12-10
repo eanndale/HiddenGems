@@ -32,7 +32,7 @@ import java.util.ArrayList;
 
 public class Utils {
     static boolean sending;
-    static boolean mapReady;
+    static boolean mapReady = false;
     static boolean isDriving=false;
     static int betweenLoc=0;
     static ArrayList<StopInfo> arra = new ArrayList<>();
@@ -395,16 +395,30 @@ public class Utils {
     }
 
 
-    public static class sendNearby extends AsyncTask<String, Void, String> {
+    public static class sendNearby extends AsyncTask<String, Void, JSONObject> {
+        final WeakReference<DriveActivity> da;
+
+        public sendNearby(DriveActivity da) {
+            this.da = new WeakReference<DriveActivity>(da);
+        }
+
 
         @Override
-        protected String doInBackground(String[] maps) {
+        protected JSONObject doInBackground(String[] maps) {
             try {
                 JSONObject rsp = Utils.makeRequest( "https://105yog30qc.execute-api.us-east-1.amazonaws.com/api/nearby", maps[0]);
+                return rsp;
             } catch (Exception e) {
                 e.printStackTrace();
             }
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(JSONObject res) {
+            if (res != null && da.get() != null) {
+                da.get().showNearby(res);
+            }
         }
     }
 

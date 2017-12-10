@@ -11,9 +11,6 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -23,21 +20,13 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationSettingsRequest;
-import com.google.android.gms.location.LocationSettingsResult;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
+import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 /**
  * Created by zaaron on 11/25/2017.
@@ -49,6 +38,11 @@ public class DriveActivity extends AppCompatActivity {
     static DriveActivity da;
 //    static GoogleApiClient locClient;
     static Location mLastLocation;
+    static int index = 0;
+
+    static double nearby_lat = 0.0;
+    static double nearby_lng = 0.0;
+
     private final LocationListener mLocationListener = new LocationListener() {
         @Override
         public void onLocationChanged(final Location location) {
@@ -109,6 +103,7 @@ public class DriveActivity extends AppCompatActivity {
         else if (getIntent().hasExtra("index")){
             int index = getIntent().getIntExtra("index", 0);
             updateCurrent(index);
+            DriveActivity.index = index;
         }
 
         //Rest Stop
@@ -125,7 +120,7 @@ public class DriveActivity extends AppCompatActivity {
                 } catch (Exception e) {
                     Log.e("reststop", e.getStackTrace().toString());
                 }
-                new Utils.sendNearby().execute(json.toString());
+                new Utils.sendNearby(da).execute(json.toString());
             } }
         );
 
@@ -143,7 +138,7 @@ public class DriveActivity extends AppCompatActivity {
                 } catch (Exception e) {
                     Log.e("food", e.getStackTrace().toString());
                 }
-                new Utils.sendNearby().execute(json.toString());
+                new Utils.sendNearby(da).execute(json.toString());
             } }
         );
 
@@ -161,7 +156,7 @@ public class DriveActivity extends AppCompatActivity {
                 } catch (Exception e) {
                     Log.e("gas", e.getStackTrace().toString());
                 }
-                new Utils.sendNearby().execute(json.toString());
+                new Utils.sendNearby(da).execute(json.toString());
             } }
         );
 
@@ -179,9 +174,22 @@ public class DriveActivity extends AppCompatActivity {
                 } catch (Exception e) {
                     Log.e("lodging", e.getStackTrace().toString());
                 }
-                new Utils.sendNearby().execute(json.toString());
+                new Utils.sendNearby(da).execute(json.toString());
             } }
         );
+
+        Button nearby_back = findViewById(R.id.nearby_back);
+        nearby_back.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+//                Intent intent = new Intent(getApplicationContext(), DriveActivity.class);
+//                intent.putExtra("index", DriveActivity.index);
+//                intent.putExtra("firsttime", false);
+//                startActivity(intent);
+                finishActivity(0);
+            }
+        });
+
         final Button goArrive = (Button)findViewById(R.id.goArrived);
         goArrive.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -202,7 +210,8 @@ public class DriveActivity extends AppCompatActivity {
                                     Preferences.reset();
                                     Utils.reset();
                                     Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                                    startActivity(intent);                                }
+                                    startActivity(intent);
+                                }
                             });
                         }
                     }
@@ -234,7 +243,20 @@ public class DriveActivity extends AppCompatActivity {
         startActivity(mapIntent);
     }
 
+    public void routeGoogleTo(double lat, double lng) {
+        StringBuilder s = new StringBuilder();
+        s.append("google.navigation:q=");
+        s.append(lat);
+        s.append(",");
+        s.append(lng);
+        Uri gmmIntentUri = Uri.parse(s.toString());
+        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+        mapIntent.setPackage("com.google.android.apps.maps");
+        startActivity(mapIntent);
+    }
+
     public void updateCurrent(int index) {
+        DriveActivity.index = index;
         StopInfo curr = Utils.arra.get(index);
         TextView curr_view = (TextView)findViewById(R.id.current_dest);
         curr_view.setText(curr.getName());
@@ -288,6 +310,18 @@ public class DriveActivity extends AppCompatActivity {
 
     }
 
+    public void showNearby(JSONObject json) {
+        try {
+            NearbyActivity.array = json.getJSONArray("Places");
+            Intent intent = new Intent(this, NearbyActivity.class);
+            startActivity(intent);
+            routeGoogleTo(nearby_lat, nearby_lng);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
@@ -304,56 +338,4 @@ public class DriveActivity extends AppCompatActivity {
         }
         return super.dispatchTouchEvent( event );
     }
-
-
-
-//    private class locCallBack extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,ActivityCompat.OnRequestPermissionsResultCallback{
-//
-//        @Override
-//        public void onConnected(@Nullable Bundle bundle) {
-//            LocationRequest mLocationRequest = new LocationRequest();
-//            mLocationRequest.setInterval(10000);
-//            mLocationRequest.setFastestInterval(5000);
-//            mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-//
-//            LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
-//                    .addLocationRequest(mLocationRequest);
-//
-//            PendingResult<LocationSettingsResult> result =
-//                    LocationServices.SettingsApi.checkLocationSettings(locClient, builder.build());
-//
-//            if (checkPlayServices() && ContextCompat.checkSelfPermission(DriveActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-//                Log.i("LOC", "EXCITING NEW LOC");
-//                mLastLocation = LocationServices.FusedLocationApi.getLastLocation(locClient);
-//            }
-//        }
-//
-//        @Override
-//        public void onConnectionSuspended(int i) {
-//
-//        }
-//
-//        private boolean checkPlayServices() {
-//
-//            GoogleApiAvailability googleApiAvailability = GoogleApiAvailability.getInstance();
-//            int resultCode = googleApiAvailability.isGooglePlayServicesAvailable(this);
-//
-//            if (resultCode != ConnectionResult.SUCCESS) {
-//                if (googleApiAvailability.isUserResolvableError(resultCode)) {
-//                } else {
-//                    Toast.makeText(getApplicationContext(),
-//                            "This device is not supported.", Toast.LENGTH_LONG)
-//                            .show();
-//                }
-//                return false;
-//            }
-//            return true;
-//        }
-//
-//        @Override
-//        public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-//
-//        }
-//    }
-
 }
