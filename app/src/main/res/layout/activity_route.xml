@@ -157,6 +157,10 @@
             android:layout_width="match_parent"
             android:layout_height="235dp"
             android:clickable="true"
+            android:choiceMode="multipleChoice"
+            android:descendantFocusability="blocksDescendants"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
             android:scrollbars="vertical">
 
         </ListView>
