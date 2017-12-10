@@ -977,7 +977,7 @@ def nearby():
 
 
 # TODO: If there are enough user reviews perhaps return those instead. Also possibly make Reviews table values similar to Google Maps API return.
-@app.route('/describe/{phone_id}', methods=['GET'])
+@app.route('/describe/{place_id}', methods=['GET'])
 def describe(place_id):
 
     rds_host = 'hiddengemsdb.cp1ydngf7sx0.us-east-1.rds.amazonaws.com'
