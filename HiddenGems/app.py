@@ -763,6 +763,8 @@ def nearby():
                         }
                 results['places'].append(data)
 
+    results['places'] = sorted(results['places'], key=lambda k: k['distance'])
+
     return results
 
 
