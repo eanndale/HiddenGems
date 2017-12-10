@@ -24,7 +24,10 @@ import com.akexorcist.googledirection.model.Leg;
 import com.akexorcist.googledirection.model.Route;
 import com.akexorcist.googledirection.util.DirectionConverter;
 
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
+import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -183,6 +186,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
+        final PlaceAutocompleteFragment addFrag = (PlaceAutocompleteFragment)
+                getFragmentManager().findFragmentById(R.id.search_place_autocomplete_fragment);
+        addFrag.setHint("Add A Stop");
+        addFrag.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(Place place) {
+                new Utils.sendAdd(place).execute();
+            }
+
+            @Override
+            public void onError(Status status) {
+                Log.i("error", "An error occurred: " + status);
+            }
+        });
+
         TabHost host = (TabHost)findViewById(R.id.tabHost);
         host.setup();
 
@@ -226,6 +244,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 new LatLng(min_lat - 0.1*d_lat, min_lng - 0.1*d_lng), new LatLng(max_lat + 0.1*d_lat, max_lng + 0.1*d_lng));
         Log.i("Bounds", ROUTE.toString());
 
+        mMap.clear();
+
         requestDirection();
 
         UiSettings settings = mMap.getUiSettings();
@@ -239,6 +259,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, as);
         ListView lw = (ListView) findViewById(R.id.listView);
         lw.setAdapter(adapter);
+//        lw.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
         lw.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {

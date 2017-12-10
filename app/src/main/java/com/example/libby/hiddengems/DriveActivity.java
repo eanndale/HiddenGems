@@ -42,6 +42,7 @@ public class DriveActivity extends AppCompatActivity {
 
     static double nearby_lat = 0.0;
     static double nearby_lng = 0.0;
+    static boolean goGoogle = false;
 
     private final LocationListener mLocationListener = new LocationListener() {
         @Override
@@ -178,18 +179,6 @@ public class DriveActivity extends AppCompatActivity {
             } }
         );
 
-        Button nearby_back = findViewById(R.id.nearby_back);
-        nearby_back.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-//                Intent intent = new Intent(getApplicationContext(), DriveActivity.class);
-//                intent.putExtra("index", DriveActivity.index);
-//                intent.putExtra("firsttime", false);
-//                startActivity(intent);
-                finishActivity(0);
-            }
-        });
-
         final Button goArrive = (Button)findViewById(R.id.goArrived);
         goArrive.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -312,14 +301,22 @@ public class DriveActivity extends AppCompatActivity {
 
     public void showNearby(JSONObject json) {
         try {
-            NearbyActivity.array = json.getJSONArray("Places");
+            NearbyActivity.array = json.getJSONArray("places");
             Intent intent = new Intent(this, NearbyActivity.class);
             startActivity(intent);
-            routeGoogleTo(nearby_lat, nearby_lng);
         }
         catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        if (goGoogle) {
+            routeGoogleTo(nearby_lat, nearby_lng);
+        }
+        goGoogle = false;
     }
 
     @Override
