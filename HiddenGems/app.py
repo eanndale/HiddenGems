@@ -865,7 +865,7 @@ def go(phone_id):
 
 # Returns the best stop index for newly added points on the route
 @app.route('/insert', methods=['POST'])
-def insert(phone_id):
+def insert():
     request = app.current_request
     input = request.json_body
 
